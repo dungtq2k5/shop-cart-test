@@ -1,44 +1,46 @@
-import { useState, useEffect } from 'react';
-import type { FormEvent } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, Package, Tag, ArrowRight } from 'lucide-react';
-import { useCartStore } from '../stores/useCartStore';
-import { formatCurrency } from '../utils';
-import api from '../lib/api';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { MapPin, Package, Tag, ArrowRight } from "lucide-react";
+import { useCartStore } from "../stores/useCartStore";
+import { formatCurrency, formatError } from "../utils";
+import api from "../lib/api";
+import toast from "react-hot-toast";
 
 export default function CheckoutPage() {
   const { cartItems, subtotalCents, clearCart } = useCartStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [couponCode, setCouponCode] = useState((location.state as any)?.couponCode || '');
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [couponCode, setCouponCode] = useState(
+    (location.state as { couponCode: string } | null)?.couponCode || "",
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (cartItems.length === 0) {
-      navigate('/cart');
+      navigate("/cart");
     }
   }, [cartItems, navigate]);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (
+    e: React.SubmitEvent<HTMLFormElement>,
+  ): Promise<void> => {
     e.preventDefault();
     if (!deliveryAddress.trim()) {
-      toast.error('Delivery address is required');
+      toast.error("Delivery address is required");
       return;
     }
     setLoading(true);
     try {
-      await api.post('/orders/checkout', {
+      await api.post("/orders/checkout", {
         deliveryAddress: deliveryAddress.trim(),
         couponCode: couponCode.trim() || undefined,
       });
       clearCart();
-      toast.success('Order placed successfully! 🎉');
-      navigate('/profile', { state: { tab: 'orders' } });
-    } catch (err: any) {
-      const msg = err.response?.data?.message || 'Checkout failed. Please try again.';
-      toast.error(msg);
+      toast.success("Order placed successfully! 🎉");
+      navigate("/profile", { state: { tab: "orders" } });
+    } catch (err: unknown) {
+      toast.error(formatError(err));
     } finally {
       setLoading(false);
     }
@@ -51,15 +53,22 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Form */}
-          <form id="checkout-form" onSubmit={handleSubmit} className="lg:col-span-3 space-y-5">
+          <form
+            id="checkout-form"
+            onSubmit={handleSubmit}
+            className="lg:col-span-3 space-y-5"
+          >
             {/* Delivery Address */}
-            <div className="p-6 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl space-y-4">
+            <div className="p-6 bg-(--color-surface) border border-(--color-border) rounded-2xl space-y-4">
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[var(--color-accent)]" />
+                <MapPin className="w-4 h-4 text-(--color-accent)" />
                 <h2 className="font-semibold">Delivery Address</h2>
               </div>
               <div>
-                <label htmlFor="checkout-address" className="block text-xs text-[var(--color-text-muted)] mb-1.5">
+                <label
+                  htmlFor="checkout-address"
+                  className="block text-xs text-(--color-text-muted) mb-1.5"
+                >
                   Full shipping address *
                 </label>
                 <textarea
@@ -69,17 +78,19 @@ export default function CheckoutPage() {
                   value={deliveryAddress}
                   onChange={(e) => setDeliveryAddress(e.target.value)}
                   placeholder="123 Main Street, City, State ZIP, Country"
-                  className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] text-sm resize-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all"
+                  className="w-full px-4 py-3 rounded-xl bg-(--color-surface-2) border border-(--color-border) text-(--color-text) placeholder-(--color-text-muted) text-sm resize-none focus:border-(--color-accent) focus:ring-2 focus:ring-(--color-accent)/20 transition-all"
                 />
               </div>
             </div>
 
             {/* Coupon */}
-            <div className="p-6 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl space-y-3">
+            <div className="p-6 bg-(--color-surface) border border-(--color-border) rounded-2xl space-y-3">
               <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-[var(--color-accent)]" />
+                <Tag className="w-4 h-4 text-(--color-accent)" />
                 <h2 className="font-semibold">Promo Code</h2>
-                <span className="text-xs text-[var(--color-text-muted)]">(optional)</span>
+                <span className="text-xs text-(--color-text-muted)">
+                  (optional)
+                </span>
               </div>
               <input
                 id="checkout-coupon"
@@ -87,7 +98,7 @@ export default function CheckoutPage() {
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                 placeholder="Enter promo code (e.g. SAVE10)"
-                className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] text-sm uppercase focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-(--color-surface-2) border border-(--color-border) text-(--color-text) placeholder-(--color-text-muted) text-sm uppercase focus:border-(--color-accent) focus:ring-2 focus:ring-(--color-accent)/20 transition-all"
               />
             </div>
 
@@ -95,36 +106,40 @@ export default function CheckoutPage() {
               id="checkout-submit"
               type="submit"
               disabled={loading}
-              className="w-full py-4 rounded-2xl bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-base flex items-center justify-center gap-2 transition-all shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/50"
+              className="w-full py-4 rounded-2xl bg-(--color-accent) hover:bg-(--color-accent-hover) disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-base flex items-center justify-center gap-2 transition-all shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/50"
             >
               <Package className="w-5 h-5" />
-              {loading ? 'Placing Order...' : 'Place Order'}
+              {loading ? "Placing Order..." : "Place Order"}
               {!loading && <ArrowRight className="w-5 h-5" />}
             </button>
           </form>
 
           {/* Order Summary */}
           <div className="lg:col-span-2">
-            <div className="p-6 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl space-y-4 sticky top-24">
+            <div className="p-6 bg-(--color-surface) border border-(--color-border) rounded-2xl space-y-4 sticky top-24">
               <h2 className="font-bold">Order Summary</h2>
               <div className="space-y-3 max-h-72 overflow-y-auto scrollbar-hide">
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-[var(--color-surface-2)] flex items-center justify-center text-sm flex-shrink-0">
+                    <div className="w-9 h-9 rounded-lg bg-(--color-surface-2) flex items-center justify-center text-sm shrink-0">
                       🛍️
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">{item.product.name}</p>
-                      <p className="text-xs text-[var(--color-text-muted)]">× {item.quantity}</p>
+                      <p className="text-xs font-medium truncate">
+                        {item.product.name}
+                      </p>
+                      <p className="text-xs text-(--color-text-muted)">
+                        × {item.quantity}
+                      </p>
                     </div>
-                    <span className="text-xs font-bold text-[var(--color-accent-light)]">
+                    <span className="text-xs font-bold text-(--color-accent-light)">
                       {formatCurrency(item.subtotalCents)}
                     </span>
                   </div>
                 ))}
               </div>
-              <div className="border-t border-[var(--color-border)] pt-3 space-y-2">
-                <div className="flex justify-between text-sm text-[var(--color-text-muted)]">
+              <div className="border-t border-(--color-border) pt-3 space-y-2">
+                <div className="flex justify-between text-sm text-(--color-text-muted)">
                   <span>Subtotal</span>
                   <span>{formatCurrency(subtotalCents)}</span>
                 </div>
@@ -136,9 +151,11 @@ export default function CheckoutPage() {
                 )}
                 <div className="flex justify-between font-bold text-base">
                   <span>Total</span>
-                  <span className="gradient-text">{formatCurrency(subtotalCents)}</span>
+                  <span className="gradient-text">
+                    {formatCurrency(subtotalCents)}
+                  </span>
                 </div>
-                <p className="text-xs text-[var(--color-text-muted)]">
+                <p className="text-xs text-(--color-text-muted)">
                   * Final total calculated at server with coupon
                 </p>
               </div>

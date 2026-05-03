@@ -1,5 +1,13 @@
 package com.shopcart.service;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.shopcart.dto.CartDto;
 import com.shopcart.entity.CartItem;
 import com.shopcart.entity.Product;
@@ -8,20 +16,20 @@ import com.shopcart.exception.BadRequestException;
 import com.shopcart.exception.EntityNotFoundException;
 import com.shopcart.repository.CartItemRepository;
 import com.shopcart.repository.ProductRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class CartService {
 
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
     private final ProductService productService;
+
+    public CartService(CartItemRepository cartItemRepository, ProductRepository productRepository,
+            ProductService productService) {
+        this.cartItemRepository = cartItemRepository;
+        this.productRepository = productRepository;
+        this.productService = productService;
+    }
 
     @Transactional(readOnly = true)
     public List<CartDto.CartItemResponse> getCart(User user) {
@@ -32,10 +40,10 @@ public class CartService {
 
     @Transactional
     public CartDto.CartItemResponse addToCart(User user, CartDto.AddToCartRequest request) {
-        Product product = productRepository.findById(request.getProductId())
+        Product product = productRepository.findById(Objects.requireNonNull(request.getProductId()))
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
-        if (!product.getIsActive()) {
+        if (product.getIsActive().equals(false)) {
             throw new BadRequestException("Product is not available");
         }
 
@@ -51,12 +59,14 @@ public class CartService {
                         .quantity(request.getQuantity())
                         .build());
 
-        cartItem = cartItemRepository.save(cartItem);
-        return toCartItemResponse(cartItem);
+        @SuppressWarnings("null")
+        CartItem saved = cartItemRepository.save(cartItem);
+        return toCartItemResponse(saved);
     }
 
     @Transactional
-    public CartDto.CartItemResponse updateQuantity(User user, UUID cartItemId, CartDto.UpdateCartRequest request) {
+    public CartDto.CartItemResponse updateQuantity(User user, @NonNull UUID cartItemId,
+            CartDto.UpdateCartRequest request) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new EntityNotFoundException("Cart item not found"));
 
@@ -65,12 +75,12 @@ public class CartService {
         }
 
         cartItem.setQuantity(request.getQuantity());
-        cartItem = cartItemRepository.save(cartItem);
-        return toCartItemResponse(cartItem);
+        CartItem saved = Objects.requireNonNull(cartItemRepository.save(cartItem));
+        return toCartItemResponse(saved);
     }
 
     @Transactional
-    public void removeFromCart(User user, UUID cartItemId) {
+    public void removeFromCart(User user, @NonNull UUID cartItemId) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new EntityNotFoundException("Cart item not found"));
 

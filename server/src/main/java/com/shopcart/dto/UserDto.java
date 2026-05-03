@@ -6,6 +6,10 @@ import lombok.Data;
 
 public class UserDto {
 
+    private UserDto() {
+        // Private constructor to hide the implicit public one
+    }
+
     @Data
     public static class UpdateProfileRequest {
         @Email(message = "Email must be a valid email address")

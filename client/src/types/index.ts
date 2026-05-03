@@ -1,18 +1,18 @@
 // ─── Shared API response wrapper ─────────────────────────────────────────────
-export interface ApiResponse<T> {
+export type ApiResponse<T> = {
   success: boolean;
   message: string;
   data: T;
 }
 
 // ─── Domain Models ─────────────────────────────────────────────────────────
-export interface User {
+export type User = {
   id: string;
   email: string;
   createdAt: string;
 }
 
-export interface Product {
+export type Product = {
   id: string;
   name: string;
   description: string | null;
@@ -23,14 +23,14 @@ export interface Product {
   updatedAt: string;
 }
 
-export interface CartItem {
+export type CartItem = {
   id: string;
   product: Product;
   quantity: number;
   subtotalCents: number;
 }
 
-export interface OrderItem {
+export type OrderItem = {
   id: string;
   product: Product;
   quantity: number;
@@ -38,9 +38,9 @@ export interface OrderItem {
   lineTotalCents: number;
 }
 
-export interface Order {
+export type Order = {
   id: string;
-  status: 'PENDING' | 'COMPLETED' | 'CANCELLED';
+  status: "PENDING" | "COMPLETED" | "CANCELLED";
   totalAmountCents: number;
   discountAmountCents: number;
   deliveryAddress: string;
@@ -51,50 +51,50 @@ export interface Order {
 }
 
 // ─── Pagination (Spring Data VIA_DTO mode) ─────────────────────────────────
-export interface PageMeta {
+export type PageMeta = {
   size: number;
   number: number;
   totalElements: number;
   totalPages: number;
 }
 
-export interface Page<T> {
+export type Page<T> = {
   content: T[];
   page: PageMeta;
 }
 
 // ─── Request Shapes ────────────────────────────────────────────────────────
-export interface RegisterRequest {
+export type RegisterRequest = {
   email: string;
   password: string;
 }
 
-export interface LoginRequest {
+export type LoginRequest = {
   email: string;
   password: string;
 }
 
-export interface UpdateProfileRequest {
+export type UpdateProfileRequest = {
   email?: string;
   currentPassword?: string;
   newPassword?: string;
 }
 
-export interface AddToCartRequest {
+export type AddToCartRequest = {
   productId: string;
   quantity: number;
 }
 
-export interface UpdateCartRequest {
+export type UpdateCartRequest = {
   quantity: number;
 }
 
-export interface CheckoutRequest {
+export type CheckoutRequest = {
   deliveryAddress: string;
   couponCode?: string;
 }
 
-export interface ProductFilters {
+export type ProductFilters = {
   name?: string;
   priceCentsMin?: number;
   priceCentsMax?: number;

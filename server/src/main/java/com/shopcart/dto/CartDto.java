@@ -11,6 +11,10 @@ import java.util.UUID;
 
 public class CartDto {
 
+    private CartDto() {
+        // Private constructor to hide the implicit public one
+    }
+
     @Data
     public static class AddToCartRequest {
         @NotNull(message = "Product ID is required")

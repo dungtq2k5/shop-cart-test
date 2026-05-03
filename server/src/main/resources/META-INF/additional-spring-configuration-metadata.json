@@ -1,0 +1,27 @@
+{"properties": [
+  {
+    "name": "app.jwt.secret",
+    "type": "java.lang.String",
+    "description": "Your JWT secret key"
+  },
+  {
+    "name": "app.jwt.expiration-ms",
+    "type": "java.lang.String",
+    "description": "Your JWT expiration time in milliseconds"
+  },
+  {
+    "name": "app.seed.password",
+    "type": "java.lang.String",
+    "description": "The password for the initial admin user"
+  },
+  {
+    "name": "app.cors.allowed-origins",
+    "type": "java.lang.String",
+    "description": "Allowed origins for CORS"
+  },
+  {
+    "name": "app.api.prefix",
+    "type": "java.lang.String",
+    "description": "API prefix for all controllers"
+  }
+]}

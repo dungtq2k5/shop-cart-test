@@ -9,6 +9,10 @@ import java.util.UUID;
 
 public class ProductDto {
 
+    private ProductDto() {
+        // Private constructor to hide the implicit public one
+    }
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

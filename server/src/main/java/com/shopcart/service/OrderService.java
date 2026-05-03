@@ -1,21 +1,26 @@
 package com.shopcart.service;
 
-import com.shopcart.dto.OrderDto;
-import com.shopcart.entity.*;
-import com.shopcart.exception.BadRequestException;
-import com.shopcart.exception.EntityNotFoundException;
-import com.shopcart.exception.InsufficientStockException;
-import com.shopcart.repository.*;
-import lombok.RequiredArgsConstructor;
+import java.time.Instant;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
+import com.shopcart.dto.OrderDto;
+import com.shopcart.entity.CartItem;
+import com.shopcart.entity.Coupon;
+import com.shopcart.entity.Order;
+import com.shopcart.entity.OrderItem;
+import com.shopcart.entity.Product;
+import com.shopcart.entity.User;
+import com.shopcart.exception.BadRequestException;
+import com.shopcart.exception.InsufficientStockException;
+import com.shopcart.repository.CartItemRepository;
+import com.shopcart.repository.CouponRepository;
+import com.shopcart.repository.OrderRepository;
+import com.shopcart.repository.ProductRepository;
 
 @Service
-@RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -23,6 +28,16 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final CouponRepository couponRepository;
     private final ProductService productService;
+
+    public OrderService(OrderRepository orderRepository, CartItemRepository cartItemRepository,
+            ProductRepository productRepository,
+            CouponRepository couponRepository, ProductService productService) {
+        this.orderRepository = orderRepository;
+        this.cartItemRepository = cartItemRepository;
+        this.productRepository = productRepository;
+        this.couponRepository = couponRepository;
+        this.productService = productService;
+    }
 
     @Transactional
     public OrderDto.OrderResponse checkout(User user, OrderDto.CheckoutRequest request) {
@@ -38,7 +53,7 @@ public class OrderService {
         if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
             coupon = couponRepository.findByCode(request.getCouponCode().trim().toUpperCase())
                     .orElseThrow(() -> new BadRequestException("Coupon code not found: " + request.getCouponCode()));
-            if (!coupon.getIsActive()) {
+            if (!Boolean.TRUE.equals(coupon.getIsActive())) {
                 throw new BadRequestException("Coupon is inactive");
             }
             if (coupon.getValidUntil() != null && coupon.getValidUntil().isBefore(Instant.now())) {
@@ -117,8 +132,8 @@ public class OrderService {
                 .deliveryAddress(order.getDeliveryAddress())
                 .couponCode(order.getCoupon() != null ? order.getCoupon().getCode() : null)
                 .items(items)
-                .createdAt(order.getCreatedAt().toString())
-                .updatedAt(order.getUpdatedAt().toString())
+                .createdAt(order.getCreatedAt() != null ? order.getCreatedAt().toString() : Instant.now().toString())
+                .updatedAt(order.getUpdatedAt() != null ? order.getUpdatedAt().toString() : Instant.now().toString())
                 .build();
     }
 }

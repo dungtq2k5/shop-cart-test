@@ -1,8 +1,9 @@
-import { create } from 'zustand';
-import api from '../lib/api';
-import type { User, RegisterRequest, LoginRequest } from '../types';
+import { create } from "zustand";
+import api from "../lib/api";
+import type { User, RegisterRequest, LoginRequest } from "../types";
+import { ENDPOINTS, AUTH_UNAUTHORIZED_EVENT } from "../config/constants";
 
-interface AuthState {
+type AuthState = {
   user: User | null;
   isAuth: boolean;
   isCheckingAuth: boolean;
@@ -11,12 +12,12 @@ interface AuthState {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   setUser: (user: User | null) => void;
-}
+};
 
 export const useAuthStore = create<AuthState>((set) => {
   // Listen for 401s emitted by the API interceptor
-  if (typeof window !== 'undefined') {
-    window.addEventListener('auth:unauthorized', () => {
+  if (globalThis.window) {
+    globalThis.window.addEventListener(AUTH_UNAUTHORIZED_EVENT, () => {
       set({ user: null, isAuth: false });
     });
   }
@@ -26,12 +27,12 @@ export const useAuthStore = create<AuthState>((set) => {
     isAuth: false,
     isCheckingAuth: true,
 
-    setUser: (user) => set({ user, isAuth: !!user }),
+    setUser: (user): void => set({ user, isAuth: !!user }),
 
-    checkAuth: async () => {
+    checkAuth: async (): Promise<void> => {
       set({ isCheckingAuth: true });
       try {
-        const { data } = await api.get('/auth/check');
+        const { data } = await api.get(ENDPOINTS.AUTH_CHECK);
         set({ user: data.data, isAuth: true });
       } catch {
         set({ user: null, isAuth: false });
@@ -40,18 +41,18 @@ export const useAuthStore = create<AuthState>((set) => {
       }
     },
 
-    login: async (credentials) => {
-      const { data } = await api.post('/auth/login', credentials);
+    login: async (credentials): Promise<void> => {
+      const { data } = await api.post(ENDPOINTS.AUTH_LOGIN, credentials);
       set({ user: data.data, isAuth: true });
     },
 
-    register: async (credentials) => {
-      const { data } = await api.post('/auth/register', credentials);
+    register: async (credentials): Promise<void> => {
+      const { data } = await api.post(ENDPOINTS.AUTH_REGISTER, credentials);
       set({ user: data.data, isAuth: true });
     },
 
-    logout: async () => {
-      await api.post('/auth/logout');
+    logout: async (): Promise<void> => {
+      await api.post(ENDPOINTS.AUTH_LOGOUT);
       set({ user: null, isAuth: false });
     },
   };

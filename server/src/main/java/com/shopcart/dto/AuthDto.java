@@ -7,6 +7,10 @@ import lombok.Data;
 
 public class AuthDto {
 
+    private AuthDto() {
+        // Private constructor to hide the implicit public one
+    }
+
     @Data
     public static class RegisterRequest {
         @NotBlank(message = "Email is required")

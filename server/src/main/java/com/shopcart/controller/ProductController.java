@@ -1,20 +1,26 @@
 package com.shopcart.controller;
 
-import com.shopcart.dto.ApiResponse;
-import com.shopcart.dto.ProductDto;
-import com.shopcart.service.ProductService;
-import lombok.RequiredArgsConstructor;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
+import com.shopcart.dto.ApiResponse;
+import com.shopcart.dto.ProductDto;
+import com.shopcart.service.ProductService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/products")
 @RequiredArgsConstructor
 public class ProductController {
 
@@ -34,7 +40,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProductDto.ProductResponse>> getProduct(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<ProductDto.ProductResponse>> getProduct(@PathVariable @org.springframework.lang.NonNull UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(productService.getProduct(id)));
     }
 }
