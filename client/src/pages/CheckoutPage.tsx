@@ -5,6 +5,7 @@ import { useCartStore } from "../stores/useCartStore";
 import { formatCurrency, formatError } from "../utils";
 import api from "../lib/api";
 import toast from "react-hot-toast";
+import { ENDPOINTS } from "../config/constants";
 
 export default function CheckoutPage() {
   const { cartItems, subtotalCents, clearCart } = useCartStore();
@@ -32,7 +33,7 @@ export default function CheckoutPage() {
     }
     setLoading(true);
     try {
-      await api.post("/orders/checkout", {
+      await api.post(ENDPOINTS.ORDERS_CHECKOUT, {
         deliveryAddress: deliveryAddress.trim(),
         couponCode: couponCode.trim() || undefined,
       });

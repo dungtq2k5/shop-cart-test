@@ -10,6 +10,7 @@ import api from "../lib/api";
 import type { Product, Page } from "../types";
 import ProductModal from "../components/ProductModal";
 import ProductCard from "../components/ProductCard";
+import { ENDPOINTS } from "../config/constants";
 
 export default function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -45,7 +46,7 @@ export default function HomePage() {
         params.set("page", String(currentPage));
         params.set("size", "12");
 
-        const { data } = await api.get(`/products?${params.toString()}`);
+        const { data } = await api.get(`${ENDPOINTS.PRODUCTS}?${params.toString()}`);
         if (!cancelled) setProducts(data.data as Page<Product>);
       } finally {
         if (!cancelled) setLoading(false);

@@ -2,6 +2,7 @@ package com.shopcart.service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import com.shopcart.entity.OrderItem;
 import com.shopcart.entity.Product;
 import com.shopcart.entity.User;
 import com.shopcart.exception.BadRequestException;
+import com.shopcart.exception.EntityNotFoundException;
 import com.shopcart.exception.InsufficientStockException;
 import com.shopcart.repository.CartItemRepository;
 import com.shopcart.repository.CouponRepository;
@@ -111,6 +113,28 @@ public class OrderService {
         return orderRepository.findByUserIdOrderByCreatedAtDesc(user.getId()).stream()
                 .map(this::toOrderResponse)
                 .toList();
+    }
+
+    @Transactional
+    public OrderDto.OrderResponse cancelOrder(User user, UUID orderId) {
+        Order order = orderRepository.findByIdAndUserId(orderId, user.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+        if (order.getStatus() != Order.OrderStatus.PENDING) {
+            throw new BadRequestException(
+                    "Only PENDING orders can be cancelled. Current status: " + order.getStatus());
+        }
+
+        // Refund stock for every item in the order
+        for (OrderItem item : order.getOrderItems()) {
+            Product product = item.getProduct();
+            product.setStockQty(product.getStockQty() + item.getQuantity());
+            productRepository.save(product);
+        }
+
+        order.setStatus(Order.OrderStatus.CANCELLED);
+        Order saved = orderRepository.save(order);
+        return toOrderResponse(saved);
     }
 
     private OrderDto.OrderResponse toOrderResponse(Order order) {

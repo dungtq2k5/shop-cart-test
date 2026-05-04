@@ -28,6 +28,8 @@ export const ENDPOINTS = {
   // Orders
   ORDERS_ME: "/orders/me",
   ORDERS: "/orders",
+  ORDERS_CHECKOUT: "/orders/checkout",
+  ORDERS_CANCEL: (id: string) => `/orders/${id}/cancel`,
 } as const;
 
 // ── Order status ───────────────────────────────────────────────────────────
@@ -128,6 +130,8 @@ export const MESSAGES = {
   REMOVED_FROM_CART: "Removed from cart",
   // Orders
   ORDER_PLACED: "Order placed successfully! 🎉",
+  ORDER_CANCELLED: "Order cancelled and stock refunded.",
+  ORDER_CANCEL_FAILED: "Failed to cancel order. Please try again.",
   // Errors
   FALLBACK_ERROR: "Something went wrong",
   LOGIN_FAILED: "Login failed",

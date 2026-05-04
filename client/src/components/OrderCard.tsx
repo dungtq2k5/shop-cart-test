@@ -1,10 +1,27 @@
 import { memo, useState } from "react";
-import { ChevronDown, ChevronUp, Package } from "lucide-react";
+import { ChevronDown, ChevronUp, Package, X } from "lucide-react";
 import { formatCurrency, formatDate, getStatusClasses } from "../utils";
 import type { Order } from "../types";
+import { ORDER_STATUS } from "../config/constants";
 
-const OrderCard = memo(({ order }: Readonly<{ order: Order }>) => {
+type Props = Readonly<{
+  order: Order;
+  onCancel?: (orderId: string) => Promise<void>;
+}>;
+
+const OrderCard = memo(({ order, onCancel }: Props) => {
   const [expanded, setExpanded] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+
+  const handleCancel = async (): Promise<void> => {
+    if (!onCancel) return;
+    setCancelling(true);
+    try {
+      await onCancel(order.id);
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   return (
     <div className="bg-(--color-surface) border border-(--color-border) rounded-2xl overflow-hidden">
@@ -90,6 +107,19 @@ const OrderCard = memo(({ order }: Readonly<{ order: Order }>) => {
             <span className="font-medium text-(--color-text)">Delivery: </span>
             {order.deliveryAddress}
           </div>
+
+          {/* Cancel button — only for PENDING orders */}
+          {order.status === ORDER_STATUS.PENDING && onCancel && (
+            <button
+              id={`order-cancel-${order.id}`}
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-red-500/40 text-red-400 text-sm font-medium hover:bg-red-500/10 hover:border-red-500/70 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              <X className="w-4 h-4" />
+              {cancelling ? "Cancelling…" : "Cancel Order"}
+            </button>
+          )}
         </div>
       )}
     </div>

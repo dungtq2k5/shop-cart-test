@@ -7,6 +7,7 @@ import api from "../lib/api";
 import type { Order } from "../types";
 import toast from "react-hot-toast";
 import OrderCard from "../components/OrderCard";
+import { ENDPOINTS, MESSAGES } from "../config/constants";
 
 type Tab = "account" | "orders";
 
@@ -36,7 +37,7 @@ export default function ProfilePage() {
       if (activeTab !== "orders") return;
       setOrdersLoading(true);
       try {
-        const { data } = await api.get("/orders/me");
+        const { data } = await api.get(ENDPOINTS.ORDERS_ME);
         setOrders(data.data as Order[]);
       } catch {
         toast.error("Failed to load orders");
@@ -47,6 +48,20 @@ export default function ProfilePage() {
 
     fetchOrders();
   }, [activeTab]);
+
+  const handleCancelOrder = async (orderId: string): Promise<void> => {
+    try {
+      const { data } = await api.patch(ENDPOINTS.ORDERS_CANCEL(orderId));
+      const cancelledOrder = data.data as Order;
+      // Update the order in-place so the list re-renders without a full reload
+      setOrders((prev) =>
+        prev.map((o) => (o.id === cancelledOrder.id ? cancelledOrder : o)),
+      );
+      toast.success(MESSAGES.ORDER_CANCELLED);
+    } catch (err: unknown) {
+      toast.error(formatError(err) || MESSAGES.ORDER_CANCEL_FAILED);
+    }
+  };
 
   const handleSaveProfile = async (
     e: React.SubmitEvent<HTMLFormElement>,
@@ -243,7 +258,13 @@ export default function ProfilePage() {
                 </p>
               </div>
             ) : (
-              orders.map((order) => <OrderCard key={order.id} order={order} />)
+              orders.map((order) => (
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onCancel={handleCancelOrder}
+                />
+              ))
             )}
           </div>
         )}
