@@ -80,7 +80,7 @@ class OrderServiceMockTest {
         OrderDto.OrderResponse response = orderService.checkout(mockUser, request);
 
         // Assert and verify repository interactions and check data after service processing
-        assertEquals(30000000, response.getTotalAmountCents());
+        assertEquals(30000500, response.getTotalAmountCents());
         assertEquals("123 Test Street", response.getDeliveryAddress());
 
         // Verify product stock was reduced
@@ -91,7 +91,7 @@ class OrderServiceMockTest {
         // Verify order was saved
         ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
         verify(orderRepository).save(orderCaptor.capture());
-        assertEquals(30000000, orderCaptor.getValue().getTotalAmountCents());
+        assertEquals(30000500, orderCaptor.getValue().getTotalAmountCents());
 
         // Verify cart was cleared
         verify(cartItemRepository).deleteByUserId(mockUser.getId());

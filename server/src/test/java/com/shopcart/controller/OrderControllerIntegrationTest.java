@@ -56,7 +56,7 @@ class OrderControllerIntegrationTest {
         OrderDto.OrderResponse response = new OrderDto.OrderResponse();
         response.setId(UUID.randomUUID());
         response.setDeliveryAddress("123 Main St");
-        response.setTotalAmountCents(10000); // 100 USD
+        response.setTotalAmountCents(10500); // 100 USD + 5 USD shipping
 
         when(orderService.checkout(any(), any())).thenReturn(response);
 
@@ -67,7 +67,7 @@ class OrderControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Order placed successfully"))
                 .andExpect(jsonPath("$.data.deliveryAddress").value("123 Main St"))
-                .andExpect(jsonPath("$.data.totalAmountCents").value(10000));
+                .andExpect(jsonPath("$.data.totalAmountCents").value(10500));
     }
 
     @Test

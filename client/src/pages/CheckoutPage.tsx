@@ -5,7 +5,7 @@ import { useCartStore } from "../stores/useCartStore";
 import { formatCurrency, formatError } from "../utils";
 import api from "../lib/api";
 import toast from "react-hot-toast";
-import { ENDPOINTS } from "../config/constants";
+import { ENDPOINTS, HARD_CODED_SHIPPING_FEE_CENTS } from "../config/constants";
 
 export default function CheckoutPage() {
   const { cartItems, subtotalCents, clearCart } = useCartStore();
@@ -150,10 +150,14 @@ export default function CheckoutPage() {
                     <span>Applied</span>
                   </div>
                 )}
+                <div className="flex justify-between text-sm text-(--color-text-muted)">
+                  <span>Shipping Fee</span>
+                  <span>{formatCurrency(HARD_CODED_SHIPPING_FEE_CENTS)}</span>
+                </div>
                 <div className="flex justify-between font-bold text-base">
                   <span>Total</span>
                   <span className="gradient-text">
-                    {formatCurrency(subtotalCents)}
+                    {formatCurrency(subtotalCents + HARD_CODED_SHIPPING_FEE_CENTS)}
                   </span>
                 </div>
                 <p className="text-xs text-(--color-text-muted)">

@@ -24,6 +24,7 @@ import com.shopcart.repository.ProductRepository;
 
 @Service
 public class OrderService {
+    public static final int HARD_CODED_SHIPPING_FEE_CENTS = 500;
 
     private final OrderRepository orderRepository;
     private final CartItemRepository cartItemRepository;
@@ -79,7 +80,7 @@ public class OrderService {
                 .mapToInt(ci -> ci.getProduct().getPriceCents() * ci.getQuantity())
                 .sum();
         int discountAmountCents = Math.round((subtotalCents * discountPercentage) / 100.0f);
-        int totalAmountCents = subtotalCents - discountAmountCents;
+        int totalAmountCents = subtotalCents - discountAmountCents + HARD_CODED_SHIPPING_FEE_CENTS;
 
         // 6. Persist Order and OrderItems
         Order order = Order.builder()

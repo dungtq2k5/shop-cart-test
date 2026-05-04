@@ -66,6 +66,7 @@ export const CART_DEBOUNCE_MS = 600; // milliseconds before quantity update is s
 export const CURRENCY_LOCALE = "en-US";
 export const CURRENCY_CODE = "USD";
 export const CENTS_PER_DOLLAR = 100;
+export const HARD_CODED_SHIPPING_FEE_CENTS = 500;
 
 // ── Dates ──────────────────────────────────────────────────────────────────
 

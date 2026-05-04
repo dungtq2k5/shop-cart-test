@@ -68,8 +68,14 @@ describe("Checkout Component Integration", () => {
     renderWithRouter(<CheckoutPage />);
 
     // Total subtotal from store should be correctly formatted to currency
-    const totalElements = screen.getAllByText("$3,000.00"); // 300000 cents
-    expect(totalElements.length).toBeGreaterThan(0);
+    const subtotalElements = screen.getAllByText("$3,000.00"); // 300000 cents
+    expect(subtotalElements.length).toBeGreaterThan(0);
+
+    // Shipping fee should be displayed
+    expect(screen.getByText("$5.00")).toBeInTheDocument();
+
+    // Total should include shipping fee (300000 + 500 = 300500)
+    expect(screen.getByText("$3,005.00")).toBeInTheDocument();
 
     // Coupon code should be pre-filled
     const couponInput = document.getElementById(

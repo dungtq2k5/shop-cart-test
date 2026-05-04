@@ -181,8 +181,8 @@ class OrderServiceTest {
 		OrderDto.OrderResponse response = orderService.checkout(testUser, request);
 
 		// ── Assert ─────────────────────────────────────────────────────────────
-		// 2×$50 + 1×$200 = $300 → 30000 cents
-		assertThat(response.getTotalAmountCents()).isEqualTo(30000);
+		// 2×$50 + 1×$200 = $300 → 30000 cents + 500 shipping = 30500 cents
+		assertThat(response.getTotalAmountCents()).isEqualTo(30500);
 		assertThat(response.getDiscountAmountCents()).isZero();
 		assertThat(response.getDeliveryAddress()).isEqualTo("123 Main St, City");
 		assertThat(response.getStatus()).isEqualTo("PENDING");
@@ -242,7 +242,7 @@ class OrderServiceTest {
 		final OrderDto.OrderResponse response = orderService.checkout(testUser, request);
 
 		// ── Assert ─────────────────────────────────────────────────────────────
-		assertThat(response.getTotalAmountCents()).isEqualTo(9000); // 10000 - 10%
+		assertThat(response.getTotalAmountCents()).isEqualTo(9500); // 10000 - 10% + 500
 		assertThat(response.getDiscountAmountCents()).isEqualTo(1000); // 10% of 10000
 		assertThat(response.getCouponCode()).isEqualTo("SAVE10");
 	}
