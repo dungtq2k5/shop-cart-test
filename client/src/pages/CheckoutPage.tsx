@@ -16,12 +16,13 @@ export default function CheckoutPage() {
     (location.state as { couponCode: string } | null)?.couponCode || "",
   );
   const [loading, setLoading] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   useEffect(() => {
-    if (cartItems.length === 0) {
+    if (cartItems.length === 0 && !orderPlaced) {
       navigate("/cart");
     }
-  }, [cartItems, navigate]);
+  }, [cartItems, navigate, orderPlaced]);
 
   const handleSubmit = async (
     e: React.SubmitEvent<HTMLFormElement>,
@@ -37,6 +38,7 @@ export default function CheckoutPage() {
         deliveryAddress: deliveryAddress.trim(),
         couponCode: couponCode.trim() || undefined,
       });
+      setOrderPlaced(true);
       clearCart();
       toast.success("Order placed successfully! 🎉");
       navigate("/profile", { state: { tab: "orders" } });
@@ -156,8 +158,10 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between font-bold text-base">
                   <span>Total</span>
-                  <span className="gradient-text">
-                    {formatCurrency(subtotalCents + HARD_CODED_SHIPPING_FEE_CENTS)}
+                  <span id="checkout-total-price" className="gradient-text">
+                    {formatCurrency(
+                      subtotalCents + HARD_CODED_SHIPPING_FEE_CENTS,
+                    )}
                   </span>
                 </div>
                 <p className="text-xs text-(--color-text-muted)">
