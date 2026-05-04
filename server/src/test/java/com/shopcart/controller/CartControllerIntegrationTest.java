@@ -28,50 +28,48 @@ import com.shopcart.service.CartService;
 @DisplayName("Cart API Integration Tests")
 class CartControllerIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+	@Autowired
+	private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+	@Autowired
+	private ObjectMapper objectMapper;
 
-    @MockitoBean
-    private CartService cartService;
+	@MockitoBean
+	private CartService cartService;
 
-    // Mock security beans so context loads successfully
-    @MockitoBean
-    private JwtAuthFilter jwtAuthFilter;
+	// Mock security beans so context loads successfully
+	@MockitoBean
+	private JwtAuthFilter jwtAuthFilter;
 
-    @MockitoBean
-    private JwtAuthEntryPoint jwtAuthEntryPoint;
+	@MockitoBean
+	private JwtAuthEntryPoint jwtAuthEntryPoint;
 
-    @Test
-    @DisplayName("Test POST /cart - success")
-    void testAddToCart_Success() throws Exception {
-        // Arrange
-        CartDto.AddToCartRequest request = new CartDto.AddToCartRequest();
-        request.setProductId(UUID.randomUUID());
-        request.setQuantity(2);
+	@Test
+	@DisplayName("Test POST /cart - success")
+	void testAddToCart_Success() throws Exception {
+		// Arrange
+		CartDto.AddToCartRequest request = new CartDto.AddToCartRequest();
+		request.setProductId(UUID.randomUUID());
+		request.setQuantity(2);
 
-        CartDto.CartItemResponse response = new CartDto.CartItemResponse();
-        response.setId(UUID.randomUUID());
-        com.shopcart.dto.ProductDto.ProductResponse mockProduct = new com.shopcart.dto.ProductDto.ProductResponse();
-        mockProduct.setId(request.getProductId());
-        response.setProduct(mockProduct);
-        response.setQuantity(2);
+		CartDto.CartItemResponse response = new CartDto.CartItemResponse();
+		response.setId(UUID.randomUUID());
+		com.shopcart.dto.ProductDto.ProductResponse mockProduct = new com.shopcart.dto.ProductDto.ProductResponse();
+		mockProduct.setId(request.getProductId());
+		response.setProduct(mockProduct);
+		response.setQuantity(2);
 
-        // When bypassing filters, @AuthenticationPrincipal is null unless we inject it
-        // manually,
-        // however, we can use `any()` to match it since our test focuses on controller
-        // mapping and response structure.
-        when(cartService.addToCart(any(), any())).thenReturn(response);
+		// When bypassing filters, @AuthenticationPrincipal is null unless we inject it manually,
+		// however, we can use `any()` to match it since our test focuses on controller mapping and response structure.
+		when(cartService.addToCart(any(), any())).thenReturn(response);
 
-        // Act & Assert
-        mockMvc.perform(post("/api/v1/cart")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Item added to cart"))
-                .andExpect(jsonPath("$.data.quantity").value(2));
-    }
+		// Act & Assert
+		mockMvc.perform(post("/api/v1/cart")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.message").value("Item added to cart"))
+				.andExpect(jsonPath("$.data.quantity").value(2));
+	}
 }

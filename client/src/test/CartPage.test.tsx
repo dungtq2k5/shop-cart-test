@@ -42,7 +42,7 @@ describe("Cart Component Integration", () => {
     });
   });
 
-  test("a) Test rendering and user interactions: Empty cart state", () => {
+  test("Test rendering and user interactions: Empty cart state", () => {
     renderWithRouter(<CartPage />);
 
     // Check if the empty cart message is displayed
@@ -55,7 +55,7 @@ describe("Cart Component Integration", () => {
     ).toBeInTheDocument();
   });
 
-  test("b) Test form submission and API calls: Updating quantity and removing items", async () => {
+  test("Test form submission and API calls: Updating quantity and removing items", async () => {
     // Mock store with 1 item
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (useCartStore as any).mockReturnValue({
@@ -104,7 +104,7 @@ describe("Cart Component Integration", () => {
     });
   });
 
-  test("c) Test error handling and success messages: Removing item success/error", async () => {
+  test("Test error handling and success messages: Removing item success/error", async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (useCartStore as any).mockReturnValue({
       cartItems: [

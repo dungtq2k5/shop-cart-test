@@ -52,7 +52,7 @@ describe("Checkout Component Integration", () => {
     });
   });
 
-  test("a) Test CheckoutSummary component với dữ liệu giỏ hàng: Rendering cart data", () => {
+  test("Test CheckoutSummary component with cart data: Rendering cart data", () => {
     renderWithRouter(<CheckoutPage />);
 
     // Check if item details are correctly rendered in the summary section
@@ -61,7 +61,7 @@ describe("Checkout Component Integration", () => {
     expect(screen.getByText("× 2")).toBeInTheDocument();
   });
 
-  test("b) Test PriceCalculator component (tính giá real-time): Correct totals are shown", () => {
+  test("Test PriceCalculator component with real-time price calculation: Correct totals are shown", () => {
     // If state has couponCode, it should be rendered
     (useLocation as any).mockReturnValue({ state: { couponCode: "SAVE10" } });
 
@@ -78,7 +78,7 @@ describe("Checkout Component Integration", () => {
     expect(couponInput.value).toBe("SAVE10");
   });
 
-  test("c) Test API calls and error handling: form submission", async () => {
+  test("Test API calls and error handling: form submission", async () => {
     renderWithRouter(<CheckoutPage />);
 
     const addressInput = document.getElementById(
