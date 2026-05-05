@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopcart.dto.CartDto;
 import com.shopcart.security.JwtAuthEntryPoint;
 import com.shopcart.security.JwtAuthFilter;
+import com.shopcart.security.RateLimitingFilter;
 import com.shopcart.service.CartService;
 
 @WebMvcTest(CartController.class)
@@ -39,10 +40,16 @@ class CartControllerIntegrationTest {
 
 	// Mock security beans so context loads successfully
 	@MockitoBean
+	@SuppressWarnings("unused")
 	private JwtAuthFilter jwtAuthFilter;
 
 	@MockitoBean
+	@SuppressWarnings("unused")
 	private JwtAuthEntryPoint jwtAuthEntryPoint;
+
+	@MockitoBean
+	@SuppressWarnings("unused")
+	private RateLimitingFilter rateLimitingFilter;
 
 	@Test
 	@DisplayName("Test POST /cart - success")
@@ -59,8 +66,10 @@ class CartControllerIntegrationTest {
 		response.setProduct(mockProduct);
 		response.setQuantity(2);
 
-		// When bypassing filters, @AuthenticationPrincipal is null unless we inject it manually,
-		// however, we can use `any()` to match it since our test focuses on controller mapping and response structure.
+		// When bypassing filters, @AuthenticationPrincipal is null unless we inject it
+		// manually,
+		// however, we can use `any()` to match it since our test focuses on controller
+		// mapping and response structure.
 		when(cartService.addToCart(any(), any())).thenReturn(response);
 
 		// Act & Assert

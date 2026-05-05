@@ -1,27 +1,49 @@
-{"properties": [
-  {
-    "name": "app.jwt.secret",
-    "type": "java.lang.String",
-    "description": "Your JWT secret key"
-  },
-  {
-    "name": "app.jwt.expiration-ms",
-    "type": "java.lang.String",
-    "description": "Your JWT expiration time in milliseconds"
-  },
-  {
-    "name": "app.seed.password",
-    "type": "java.lang.String",
-    "description": "The password for the initial admin user"
-  },
-  {
-    "name": "app.cors.allowed-origins",
-    "type": "java.lang.String",
-    "description": "Allowed origins for CORS"
-  },
-  {
-    "name": "app.api.prefix",
-    "type": "java.lang.String",
-    "description": "API prefix for all controllers"
-  }
-]}
+{
+  "properties": [
+    {
+      "name": "app.jwt.secret",
+      "type": "java.lang.String",
+      "description": "Your JWT secret key"
+    },
+    {
+      "name": "app.jwt.expiration-ms",
+      "type": "java.lang.String",
+      "description": "Your JWT expiration time in milliseconds"
+    },
+    {
+      "name": "app.seed.password",
+      "type": "java.lang.String",
+      "description": "The password for the initial admin user"
+    },
+    {
+      "name": "app.cors.allowed-origins",
+      "type": "java.lang.String",
+      "description": "Allowed origins for CORS"
+    },
+    {
+      "name": "app.api.prefix",
+      "type": "java.lang.String",
+      "description": "API prefix for all controllers"
+    },
+    {
+      "name": "app.rate-limit.auth.capacity",
+      "type": "java.lang.String",
+      "description": "The number of requests allowed per refill window for authentication endpoints"
+    },
+    {
+      "name": "app.rate-limit.auth.refill-duration-minutes",
+      "type": "java.lang.String",
+      "description": "The time window in minutes for the authentication rate limit"
+    },
+    {
+      "name": "app.rate-limit.product.capacity",
+      "type": "java.lang.String",
+      "description": "The number of requests allowed per refill window for product endpoints"
+    },
+    {
+      "name": "app.rate-limit.product.refill-duration-minutes",
+      "type": "java.lang.String",
+      "description": "The time window in minutes for the product rate limit"
+    }
+  ]
+}

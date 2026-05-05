@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final RateLimitingFilter rateLimitingFilter;
     private final JwtAuthEntryPoint jwtAuthEntryPoint;
 
     @Value("${app.cors.allowed-origins}")
@@ -53,6 +54,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/h2-console/**").permitAll() // H2 console remains unaffected
                         .anyRequest().authenticated())
+                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers.frameOptions(fo -> fo.sameOrigin()));
 

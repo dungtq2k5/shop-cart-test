@@ -16,9 +16,10 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app")
 public class AppProperties {
 
-    private final Jwt jwt = new Jwt();
-    private final Cors cors = new Cors();
-    private final Seed seed = new Seed();
+    private Jwt jwt = new Jwt();
+    private Cors cors = new Cors();
+    private Seed seed = new Seed();
+    private RateLimit rateLimit = new RateLimit();
 
     @Getter
     @Setter
@@ -36,7 +37,34 @@ public class AppProperties {
     @Getter
     @Setter
     public static class Seed {
-        /** Seed users' initial password. Override via {@code APP_SEED_PASSWORD} env var. */
+        /**
+         * Seed users' initial password. Override via {@code APP_SEED_PASSWORD} env var.
+         */
         private String password;
+    }
+
+    @Getter
+    @Setter
+    public static class RateLimit {
+        private Auth auth = new Auth();
+        private Product product = new Product();
+
+        @Getter
+        @Setter
+        public static class Auth {
+            /** Capacity (number of tokens) for auth endpoints (login/register). */
+            private long capacity = 5;
+            /** Refill duration in minutes for auth endpoints. */
+            private long refillDurationMinutes = 1;
+        }
+
+        @Getter
+        @Setter
+        public static class Product {
+            /** Capacity for product search/view endpoints. */
+            private long capacity = 20;
+            /** Refill duration in minutes for product endpoints. */
+            private long refillDurationMinutes = 1;
+        }
     }
 }

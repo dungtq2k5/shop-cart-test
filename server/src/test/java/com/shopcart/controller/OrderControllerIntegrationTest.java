@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopcart.dto.OrderDto;
 import com.shopcart.security.JwtAuthEntryPoint;
 import com.shopcart.security.JwtAuthFilter;
+import com.shopcart.security.RateLimitingFilter;
 import com.shopcart.service.OrderService;
 
 @WebMvcTest(OrderController.class)
@@ -40,10 +41,16 @@ class OrderControllerIntegrationTest {
 
     // Mock security beans to satisfy context
     @MockitoBean
+    @SuppressWarnings("unused")
     private JwtAuthFilter jwtAuthFilter;
 
     @MockitoBean
+    @SuppressWarnings("unused")
     private JwtAuthEntryPoint jwtAuthEntryPoint;
+
+    @MockitoBean
+    @SuppressWarnings("unused")
+    private RateLimitingFilter rateLimitingFilter;
 
     @Test
     @DisplayName("Test POST /api/v1/orders/checkout - success")
