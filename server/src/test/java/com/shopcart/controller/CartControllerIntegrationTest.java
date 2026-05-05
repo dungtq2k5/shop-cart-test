@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -34,6 +35,9 @@ class CartControllerIntegrationTest {
 
 	@Autowired
 	private ObjectMapper objectMapper;
+
+	@Value("${app.api.prefix:/api/v1}")
+	private String apiPrefix;
 
 	@MockitoBean
 	private CartService cartService;
@@ -73,7 +77,7 @@ class CartControllerIntegrationTest {
 		when(cartService.addToCart(any(), any())).thenReturn(response);
 
 		// Act & Assert
-		mockMvc.perform(post("/api/v1/cart")
+		mockMvc.perform(post(apiPrefix + "/cart")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 				.andDo(print())

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -35,6 +36,9 @@ class OrderControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Value("${app.api.prefix:/api/v1}")
+    private String apiPrefix;
 
     @MockitoBean
     private OrderService orderService;
@@ -68,7 +72,7 @@ class OrderControllerIntegrationTest {
         when(orderService.checkout(any(), any())).thenReturn(response);
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/orders/checkout")
+        mockMvc.perform(post(apiPrefix + "/orders/checkout")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -88,7 +92,7 @@ class OrderControllerIntegrationTest {
         when(orderService.getMyOrders(any())).thenReturn(List.of(order));
 
         // Act & Assert
-        mockMvc.perform(get("/api/v1/orders/me")
+        mockMvc.perform(get(apiPrefix + "/orders/me")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))

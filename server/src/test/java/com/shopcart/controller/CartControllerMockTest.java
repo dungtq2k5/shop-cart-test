@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -35,6 +36,9 @@ class CartControllerMockTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Value("${app.api.prefix:/api/v1}")
+    private String apiPrefix;
 
     @MockitoBean
     private CartService cartService;
@@ -68,7 +72,7 @@ class CartControllerMockTest {
         when(cartService.addToCart(any(), any())).thenReturn(mockResponse);
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/cart")
+        mockMvc.perform(post(apiPrefix + "/cart")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

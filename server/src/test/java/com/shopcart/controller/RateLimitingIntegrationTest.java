@@ -3,6 +3,7 @@ package com.shopcart.controller;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -28,6 +29,9 @@ class RateLimitingIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Value("${app.api.prefix:/api/v1}")
+    private String apiPrefix;
+
     @Test
     void whenAuthLimitExceeded_thenReturns429() throws Exception {
         AuthDto.LoginRequest loginRequest = new AuthDto.LoginRequest();
@@ -36,14 +40,15 @@ class RateLimitingIntegrationTest {
 
         // The default capacity for auth is 5
         for (int i = 0; i < 5; i++) {
-            mockMvc.perform(post("/api/v1/auth/login")
+            mockMvc.perform(post(apiPrefix + "/auth/login")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(loginRequest)))
-                    .andExpect(status().isUnauthorized()); // Assuming user doesn't exist, we just want to see it's NOT 429 yet
+                    .andExpect(status().isUnauthorized()); // Assuming user doesn't exist, we just want to see it's NOT
+                                                           // 429 yet
         }
 
         // 6th request should be rate limited
-        mockMvc.perform(post("/api/v1/auth/login")
+        mockMvc.perform(post(apiPrefix + "/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isTooManyRequests())
@@ -55,12 +60,12 @@ class RateLimitingIntegrationTest {
     void whenProductLimitExceeded_thenReturns429() throws Exception {
         // The default capacity for product is 20
         for (int i = 0; i < 20; i++) {
-            mockMvc.perform(get("/api/v1/products"))
+            mockMvc.perform(get(apiPrefix + "/products"))
                     .andExpect(status().isOk());
         }
 
         // 21st request should be rate limited
-        mockMvc.perform(get("/api/v1/products"))
+        mockMvc.perform(get(apiPrefix + "/products"))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.message").value("Too many requests. Please try again later."));
