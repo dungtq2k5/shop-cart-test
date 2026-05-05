@@ -1,6 +1,6 @@
 import { X, ShoppingCart, Star } from "lucide-react";
 import type { Product } from "../types";
-import { formatCurrency } from "../utils";
+import { formatCurrency, formatError } from "../utils";
 import { useCartStore } from "../stores/useCartStore";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useEffect, useRef, useState, memo } from "react";
@@ -49,8 +49,8 @@ const ProductModal = memo(({ product, onClose }: Props) => {
       await addToCart({ productId: product.id, quantity });
       toast.success(`${product.name} added to cart!`);
       onClose();
-    } catch {
-      toast.error("Failed to add item to cart");
+    } catch (err) {
+      toast.error(formatError(err, "Failed to add item to cart"));
     } finally {
       setAdding(false);
     }

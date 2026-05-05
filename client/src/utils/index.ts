@@ -51,14 +51,15 @@ export function formatError(
   fallback: string = "An unknown error occurred",
 ): string {
   if (typeof err === "string") return err;
-  if (err instanceof Error) return err.message;
 
-  // Axios-style error: { response: { data: { message: string } } }
+  // Prioritize Axios-style error: { response: { data: { message: string } } }
   if (err !== null && typeof err === "object" && "response" in err) {
     const resp = (err as { response?: { data?: { message?: string } } })
       .response;
     if (resp?.data?.message) return resp.data.message;
   }
+
+  if (err instanceof Error) return err.message;
 
   return fallback;
 }

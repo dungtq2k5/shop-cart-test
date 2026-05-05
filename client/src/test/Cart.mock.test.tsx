@@ -100,7 +100,7 @@ describe("Cart Mock Tests", () => {
       });
 
       // Verify UI feedback for error
-      expect(toast.error).toHaveBeenCalledWith("Failed to add item to cart");
+      expect(toast.error).toHaveBeenCalledWith("Network Error");
       // Verify onClose is NOT called on failure
       expect(mockOnClose).not.toHaveBeenCalled();
     });

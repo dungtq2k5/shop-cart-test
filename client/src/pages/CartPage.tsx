@@ -9,7 +9,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useCartStore } from "../stores/useCartStore";
-import { formatCurrency } from "../utils";
+import { formatCurrency, formatError } from "../utils";
 import toast from "react-hot-toast";
 
 export default function CartPage() {
@@ -36,8 +36,8 @@ export default function CartPage() {
     try {
       await removeFromCart(cartItemId);
       toast.success(`${productName} removed from cart`);
-    } catch {
-      toast.error("Failed to remove item");
+    } catch (err) {
+      toast.error(formatError(err, "Failed to remove item"));
     } finally {
       setRemoving(null);
     }
