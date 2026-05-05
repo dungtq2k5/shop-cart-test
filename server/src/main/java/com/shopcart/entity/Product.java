@@ -21,7 +21,7 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255)")
     private String name;
 
     @Column(columnDefinition = "TEXT")
