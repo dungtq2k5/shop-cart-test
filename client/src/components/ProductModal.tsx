@@ -13,12 +13,16 @@ type Props = Readonly<{
 }>;
 
 const ProductModal = memo(({ product, onClose }: Props) => {
-  const { addToCart } = useCartStore();
+  const { cartItems, addToCart } = useCartStore();
   const { isAuth } = useAuthStore();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
+
+  const existingItem = cartItems.find((i) => i.product.id === product.id);
+  const existingQty = existingItem ? existingItem.quantity : 0;
+  const maxToAdd = Math.max(0, product.stockQty - existingQty);
 
   // Trap focus & prevent background scroll
   useEffect(() => {
@@ -128,7 +132,7 @@ const ProductModal = memo(({ product, onClose }: Props) => {
           </div>
 
           {/* Quantity Selector */}
-          {product.stockQty > 0 && (
+          {maxToAdd > 0 && (
             <div className="flex items-center gap-3">
               <span className="text-sm text-(--color-text-muted)">
                 Quantity:
@@ -147,11 +151,9 @@ const ProductModal = memo(({ product, onClose }: Props) => {
                 </span>
                 <button
                   id="product-modal-qty-inc"
-                  onClick={() =>
-                    setQuantity((q) => Math.min(product.stockQty, q + 1))
-                  }
+                  onClick={() => setQuantity((q) => Math.min(maxToAdd, q + 1))}
                   className="w-8 h-8 rounded-md hover:bg-(--color-border) flex items-center justify-center text-(--color-text-muted) hover:text-(--color-text) transition-colors font-bold"
-                  disabled={quantity >= product.stockQty}
+                  disabled={quantity >= maxToAdd}
                 >
                   +
                 </button>
@@ -163,7 +165,7 @@ const ProductModal = memo(({ product, onClose }: Props) => {
           )}
 
           {/* Subtotal */}
-          {product.stockQty > 0 && (
+          {maxToAdd > 0 && (
             <div className="rounded-lg bg-(--color-surface-2) border border-(--color-border) p-3 flex items-center justify-between">
               <span className="text-sm text-(--color-text-muted)">Total</span>
               <span className="font-bold text-(--color-accent-light)">
@@ -175,14 +177,14 @@ const ProductModal = memo(({ product, onClose }: Props) => {
           <button
             id="product-modal-add-to-cart"
             onClick={handleAddToCart}
-            disabled={adding || product.stockQty === 0}
+            disabled={adding || maxToAdd === 0}
             className="w-full py-3 rounded-xl bg-(--color-accent) hover:bg-(--color-accent-hover) disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40"
           >
             <ShoppingCart className="w-4 h-4" />
             {adding
               ? "Adding..."
-              : product.stockQty === 0
-                ? "Out of Stock"
+              : maxToAdd === 0
+                ? "Max Stock Reached"
                 : "Add to Cart"}
           </button>
         </div>

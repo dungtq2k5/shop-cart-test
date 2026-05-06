@@ -44,6 +44,7 @@ describe("Cart Mock Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (useCartStore as any).mockReturnValue({
+      cartItems: [],
       addToCart: mockAddToCart,
     });
     // Assume user is authenticated
