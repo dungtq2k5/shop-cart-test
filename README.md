@@ -1,35 +1,40 @@
-# ShopCart Test
+# ShopCart - Software Testing Capstone Project
 
-This project is part of the **Software Testing** course. The primary objective is to demonstrate and implement various software testing techniques on a functional e-commerce application.
+A full-stack e-commerce application engineered specifically to serve as a comprehensive testing ground for advanced Software Quality Assurance (QA) techniques.
 
-The application is a simplified shopping cart system built with a modern tech stack, designed to be easy to test and deploy.
+This project was developed to fulfill the requirements of a university Software Testing course, demonstrating practical, hands-on implementations of Unit, Integration, Mock, End-to-End (E2E), Performance, and Security testing methodologies.
+
+## 🎯 Project Objective
+
+The primary goal of this repository is not to build a complex, production-ready storefront, but rather a structurally sound application that allows for the rigorous application of modern testing frameworks. The system includes intentional domain boundaries, stock validations, and security measures designed specifically to be verified by automated test scripts.
+
+## ✨ Core Features
+
+- **Secure Authentication**: User login and registration utilizing stateless JSON Web Tokens (JWT) stored safely in HttpOnly cookies.
+- **Product Catalog**: Browse mock products seeded dynamically into an in-memory database.
+- **Cart Management**: Add items, modify quantities (with strict backend stock validation), and remove items.
+- **Checkout Workflow**: Calculate subtotals, apply mock discount coupons, calculate shipping, and securely place orders via atomic database transactions.
 
 ## 📂 Project Structure
 
 ```txt
 .
-├── client/                # Frontend application (React 19 + Vite 8)
-│   ├── e2e/               # Playwright End-to-End tests
-│   ├── src/               # React components, hooks, and stores
-│   ├── public/            # Static assets
-│   └── playwright.config.ts
-├── server/                # Backend application (Spring Boot 3.5 + Java 25)
-│   ├── src/main/java      # Business logic and API endpoints
-│   └── src/test/java      # Unit and integration tests
-├── documents/             # Requirements, architecture, and reports
-├── docker-compose.yml     # Infrastructure setup (PostgreSQL)
-└── README.md, LICENSE...  # Project configuration and documentation
+├── .github/workflows/ci.yml # Automated CI Pipeline (Runs all tests on Push/PR)
+├── client/                  # Frontend application (React 19 + Vite 8)
+│   ├── e2e/                 # Playwright End-to-End test suites
+│   ├── src/test/            # Vitest Unit and Integration tests
+│   ├── playwright.config.ts # Playwright E2E configuration
+│   ├── vitest.config.ts     # Vitest configuration
+│   └── ...                  # React components, stores, and assets
+├── server/                  # Backend application (Spring Boot 3.5 + Java 25)
+│   ├── src/main/java/...    # Application source code
+│   ├── src/test/java/...    # JUnit 5, Mockito, and Security tests
+│   ├── pom.xml              # Project dependencies (Testing starters, JJWT, etc.)
+│   └── ...                  # Other backend resources
+├── documents/               # Assignment requirements, test plans, and QA reports
+├── docker-compose.yml       # Infrastructure for containerized integration testing
+└── ...                      # Project configuration files and documentations
 ```
-
-## 🚀 Features
-
-- **Authentication**: Secure login and registration with JWT (stored in HTTP-only cookies).
-- **Product Catalog**: Browse products with filtering and pagination.
-- **Shopping Cart**: Add, update, and remove items with real-time subtotal calculations.
-- **Coupon System**: Apply discount codes (e.g., `SAVE10`, `SUMMER50`).
-- **Checkout Process**: Atomic 7-step checkout with inventory management and order history.
-- **User Profile**: Manage account details and view previous orders.
-- **Security**: Built-in protections against SQL Injection, XSS, CSRF, and IDOR.
 
 ## 🛠️ Tech Stack
 
@@ -55,7 +60,7 @@ The application is a simplified shopping cart system built with a modern tech st
 ### Prerequisites
 
 - Java 25+
-- Node.js 20+
+- Node.js 24+
 - Docker (optional, for PostgreSQL)
 
 ### Running Locally (Quick Start)
