@@ -184,6 +184,6 @@ test.describe("Cart E2E Tests", () => {
     // Try adding to cart to see error message
     await page.locator("#product-modal-add-to-cart").click();
     const toastMessage = page.getByRole("status");
-    await expect(toastMessage).toContainText("Failed to add item to cart");
+    await expect(toastMessage).toContainText("Insufficient stock");
   });
 });
