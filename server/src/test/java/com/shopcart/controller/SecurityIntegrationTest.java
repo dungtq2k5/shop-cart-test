@@ -219,4 +219,28 @@ class SecurityIntegrationTest {
 				.content(objectMapper.writeValueAsString(addRequest)))
 				.andExpect(status().isOk());
 	}
+
+	// ── 6. Token Tampering Tests ───────────────────────────────────────────
+
+	@Test
+	@DisplayName("Authentication: Modifying JWT signature")
+	void testTokenTampering_InvalidSignature() throws Exception {
+		// Tamper with the token by changing a character in the signature part
+		String tamperedToken = token1.substring(0, token1.length() - 5) + "abcde";
+
+		mockMvc.perform(get(apiPrefix + "/cart")
+				.cookie(new Cookie("jwt", tamperedToken)))
+				.andExpect(status().isUnauthorized());
+	}
+
+	// ── 7. CORS Tests ───────────────────────────────────────────────────────
+
+	@Test
+	@DisplayName("CORS: Request from unauthorized origin")
+	void testCORS_BlockedUnauthorizedOrigin() throws Exception {
+		mockMvc.perform(get(apiPrefix + "/products")
+				.header("Origin", "http://malicious.com")
+				.header("Access-Control-Request-Method", "GET"))
+				.andExpect(status().isForbidden());
+	}
 }
