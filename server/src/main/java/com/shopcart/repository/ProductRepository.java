@@ -14,7 +14,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     @Query("""
         SELECT p FROM Product p
         WHERE p.isActive = true
-          AND (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%')))
+          AND (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', CAST(:name AS string), '%')))
           AND (:priceCentsMin IS NULL OR p.priceCents >= :priceCentsMin)
           AND (:priceCentsMax IS NULL OR p.priceCents <= :priceCentsMax)
         """)

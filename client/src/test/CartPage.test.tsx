@@ -139,7 +139,7 @@ describe("Cart Component Integration", () => {
     fireEvent.click(removeButton);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("Failed to remove item");
+      expect(toast.error).toHaveBeenCalledWith("Failed");
     });
   });
 });

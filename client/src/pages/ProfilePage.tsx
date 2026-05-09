@@ -39,8 +39,8 @@ export default function ProfilePage() {
       try {
         const { data } = await api.get(ENDPOINTS.ORDERS_ME);
         setOrders(data.data as Order[]);
-      } catch {
-        toast.error("Failed to load orders");
+      } catch (err) {
+        toast.error(formatError(err, "Failed to load orders"));
       } finally {
         setOrdersLoading(false);
       }

@@ -9,7 +9,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useCartStore } from "../stores/useCartStore";
-import { formatCurrency } from "../utils";
+import { formatCurrency, formatError } from "../utils";
 import toast from "react-hot-toast";
 
 export default function CartPage() {
@@ -36,8 +36,8 @@ export default function CartPage() {
     try {
       await removeFromCart(cartItemId);
       toast.success(`${productName} removed from cart`);
-    } catch {
-      toast.error("Failed to remove item");
+    } catch (err) {
+      toast.error(formatError(err, "Failed to remove item"));
     } finally {
       setRemoving(null);
     }
@@ -120,7 +120,8 @@ export default function CartPage() {
                         onClick={() =>
                           updateQuantity(item.id, item.quantity + 1)
                         }
-                        className="w-7 h-7 rounded-md hover:bg-(--color-border) flex items-center justify-center text-(--color-text-muted) hover:text-(--color-text) transition-colors"
+                        className="w-7 h-7 rounded-md hover:bg-(--color-border) flex items-center justify-center text-(--color-text-muted) hover:text-(--color-text) transition-colors disabled:opacity-50"
+                        disabled={item.quantity >= item.product.stockQty}
                       >
                         <Plus className="w-3 h-3" />
                       </button>

@@ -47,16 +47,27 @@ public class CartService {
             throw new BadRequestException("Product is not available");
         }
 
+        int existingQuantity = cartItemRepository
+                .findByUserIdAndProductId(user.getId(), product.getId())
+                .map(CartItem::getQuantity)
+                .orElse(0);
+
+        int newQuantity = existingQuantity + request.getQuantity();
+
+        if (newQuantity > product.getStockQty()) {
+            throw new BadRequestException("Stock not available");
+        }
+
         CartItem cartItem = cartItemRepository
                 .findByUserIdAndProductId(user.getId(), product.getId())
                 .map(existing -> {
-                    existing.setQuantity(existing.getQuantity() + request.getQuantity());
+                    existing.setQuantity(newQuantity);
                     return existing;
                 })
                 .orElseGet(() -> CartItem.builder()
                         .user(user)
                         .product(product)
-                        .quantity(request.getQuantity())
+                        .quantity(newQuantity)
                         .build());
 
         @SuppressWarnings("null")
@@ -72,6 +83,10 @@ public class CartService {
 
         if (!cartItem.getUser().getId().equals(user.getId())) {
             throw new BadRequestException("Cart item does not belong to current user");
+        }
+
+        if (request.getQuantity() > cartItem.getProduct().getStockQty()) {
+            throw new BadRequestException("Stock not available");
         }
 
         cartItem.setQuantity(request.getQuantity());

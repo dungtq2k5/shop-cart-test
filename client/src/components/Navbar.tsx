@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useCartStore } from "../stores/useCartStore";
+import { formatError } from "../utils";
 import toast from "react-hot-toast";
 import React, { useState, useRef, useEffect, memo } from "react";
 
@@ -48,8 +49,8 @@ const Navbar = memo(() => {
       await logout();
       toast.success("Logged out successfully");
       navigate("/login");
-    } catch {
-      toast.error("Logout failed");
+    } catch (err) {
+      toast.error(formatError(err, "Logout failed"));
     }
   };
 
