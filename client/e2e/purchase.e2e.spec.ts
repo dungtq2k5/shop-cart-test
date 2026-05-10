@@ -63,50 +63,46 @@ test.describe("Purchase E2E Tests", () => {
     await page.waitForSelector("#navbar-cart-link");
   });
 
-  test("Check accurate price calculation (subtotal, shipping, discount)", async ({
-    page,
-  }) => {
+  // ---------------------------------------------------------
+  // ĐÃ SỬA: Thêm thao tác nhập mã giảm giá và check UI thay đổi
+  // ---------------------------------------------------------
+  test("Check accurate price calculation (subtotal, shipping, discount)", async ({ page }) => {
     // Go to cart, then to checkout
     await cartPage.goToCart();
     await cartPage.proceedCheckoutBtn.click();
     await expect(page).toHaveURL(/.*\/checkout/);
 
-    // Expected subtotal: $300.00
-    // Shipping fee: $5.00
-    // Total should be: $305.00
-    const total = await checkoutPage.getTotalPrice();
-    expect(total).toBe("$305.00");
-
-    // Check if Shipping Fee ($5.00) is visible
+    // 1. Kiểm tra giá ban đầu chưa có mã giảm giá (300 + 5 ship)
+    const initialTotal = await checkoutPage.getTotalPrice();
+    expect(initialTotal).toBe("$305.00");
     await expect(checkoutPage.shippingFeeDisplay).toBeVisible();
 
-    // Mock the coupon API
-    await page.route("**/api/v1/orders/checkout", async (route) => {
-      // Mock successful order checkout response
+    // 2. Mock API áp dụng mã giảm giá (nếu frontend của bạn có gọi API lúc apply)
+    await page.route("**/api/v1/coupons/validate", async (route) => {
       await route.fulfill({
         status: 200,
         json: {
           success: true,
-          message: "Order placed successfully",
-          data: {
-            id: "order-1",
-            totalAmountCents: 27500, // (30000 - 10%) + 500 = 27500 => $275.00
-          },
+          data: { type: "percentage", value: 10 } // Giảm 10%
         },
       });
     });
+
+    // 3. Thực hiện thao tác nhập mã trên UI
+    await checkoutPage.applyCoupon("SAVE10");
+
+    // 4. Expect tổng tiền thay đổi TRÊN MÀN HÌNH UI (300 - 30 + 5 = 275)
+    await expect(checkoutPage.totalDisplay).toHaveText("$275.00");
   });
 
+  // (Test case 2: Place order successfully from Checkout - GIỮ NGUYÊN CỦA BẠN)
   test("Place order successfully from Checkout", async ({ page }) => {
-    // Go to cart, wait for it to load, then proceed to checkout
     await cartPage.goToCart();
     await cartPage.proceedCheckoutBtn.click();
     await expect(page).toHaveURL(/.*\/checkout/);
 
-    // Fill the address
     await checkoutPage.fillAddress("123 Testing Ave, Test City");
 
-    // Mock checkout API to return success
     await page.route("**/api/v1/orders/checkout", async (route) => {
       const payload = route.request().postDataJSON();
       expect(payload.deliveryAddress).toBe("123 Testing Ave, Test City");
@@ -121,7 +117,6 @@ test.describe("Purchase E2E Tests", () => {
       });
     });
 
-    // Mock the profile API to intercept the redirect
     await page.route("**/api/v1/orders/me", async (route) => {
       await route.fulfill({
         status: 200,
@@ -129,14 +124,39 @@ test.describe("Purchase E2E Tests", () => {
       });
     });
 
-    // Place the order
     await checkoutPage.placeOrder();
 
-    // Verify toast success
     const toastMessage = page.getByRole("status");
     await expect(toastMessage).toContainText("Order placed successfully! 🎉");
-
-    // Ensure it navigates to profile/orders
     await expect(page).toHaveURL(/.*\/profile/);
+  });
+
+  // ---------------------------------------------------------
+  // ĐÃ THÊM: Test case mới để check cảnh báo hết hàng
+  // ---------------------------------------------------------
+  test("Show inventory warning when product is out of stock during checkout", async ({ page }) => {
+    await cartPage.goToCart();
+    await cartPage.proceedCheckoutBtn.click();
+    await expect(page).toHaveURL(/.*\/checkout/);
+
+    await checkoutPage.fillAddress("456 Out Of Stock Blvd");
+
+    // Mock API checkout trả về lỗi 400 - Thiếu tồn kho
+    await page.route("**/api/v1/orders/checkout", async (route) => {
+      await route.fulfill({
+        status: 400,
+        json: {
+          success: false,
+          message: "Insufficient stock for Test Product",
+        },
+      });
+    });
+
+    // Bấm nút đặt hàng (Chỉ click, không xài placeOrder() vì hàm đó đang đợi toast success)
+    await checkoutPage.submitBtn.click();
+
+    // Expect component InventoryWarning xuất hiện trên màn hình
+    await expect(checkoutPage.inventoryWarning).toBeVisible();
+    await expect(checkoutPage.inventoryWarning).toContainText("Insufficient stock");
   });
 });

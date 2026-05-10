@@ -8,7 +8,7 @@ export class CheckoutPage {
   readonly submitBtn: Locator;
   readonly totalDisplay: Locator;
   readonly shippingFeeDisplay: Locator;
-
+  readonly inventoryWarning: Locator;
   constructor(page: Page) {
     this.page = page;
     this.checkoutForm = page.locator("#checkout-form");
@@ -19,6 +19,7 @@ export class CheckoutPage {
     this.totalDisplay = page.locator('#checkout-total-price');
     // Shipping fee displays as $5.00
     this.shippingFeeDisplay = page.locator("text=$5.00");
+    this.inventoryWarning = page.locator("#inventory-warning");
   }
 
   async fillAddress(address: string) {
