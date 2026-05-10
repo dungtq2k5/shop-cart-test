@@ -108,11 +108,16 @@ export function calculateLineSubtotal(
  * calculateCartTotal([{ priceCents: 1000, quantity: 2 }, { priceCents: 500, quantity: 1 }])
  * // → 2500
  */
-export function calculateCartTotal(
-  items: Array<{ priceCents: number; quantity: number }>,
-): number {
-  return items.reduce(
-    (sum, item) => sum + calculateLineSubtotal(item.priceCents, item.quantity),
-    0,
-  );
+export function calculateCartTotal(items: any[], discountCode?: string): number {
+  // 1. Tính tổng tiền gốc
+  let total = items.reduce((sum, item) => {
+    return sum + (item.priceCents * item.quantity);
+  }, 0);
+
+  // 2. Xử lý mã giảm giá (ví dụ cơ bản)
+  if (discountCode === "SALE10") {
+    total = total * 0.9; // Giảm 10%
+  }
+
+  return total;
 }

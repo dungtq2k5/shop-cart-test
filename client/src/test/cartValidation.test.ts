@@ -23,6 +23,30 @@ import {
 // Group: validateCartItem()
 // ─────────────────────────────────────────────────────────────────────────────
 describe("validateCartItem()", () => {
+  // ── Negative: Missing/Empty Quantity ────────────────────────────────────
+  test("TC_CART_NEG_QTY_NULL – returns error when quantity is null", () => {
+    // Negative test: quantity cannot be null
+    const input = { productId: "P001", quantity: null as any, stock: 10 };
+    const result = validateCartItem(input);
+    expect(result.valid).toBe(false);
+    expect(result.error).toBeDefined(); // Hoặc message cụ thể: "Quantity is required"
+  });
+
+  test("TC_CART_NEG_QTY_UNDEF – returns error when quantity is undefined", () => {
+    // Negative test: quantity cannot be undefined
+    const input = { productId: "P001", quantity: undefined as any, stock: 10 };
+    const result = validateCartItem(input);
+    expect(result.valid).toBe(false);
+    expect(result.error).toBeDefined();
+  });
+
+  test("TC_CART_NEG_QTY_EMPTY – returns error when quantity is an empty string", () => {
+    // Negative test: quantity cannot be empty string (common in form inputs)
+    const input = { productId: "P001", quantity: "" as any, stock: 10 };
+    const result = validateCartItem(input);
+    expect(result.valid).toBe(false);
+    expect(result.error).toBeDefined();
+  });
   // ── Happy Path ──────────────────────────────────────────────────────────
 
   test("TC_CART_001 – returns valid:true for a normal, in-stock product", () => {
@@ -137,6 +161,7 @@ describe("validateCartItem()", () => {
     const result = validateCartItem(input);
     expect(result.valid).toBe(true);
   });
+  
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -190,5 +215,42 @@ describe("calculateCartTotal()", () => {
     // Boundary: single-item cart
     const items = [{ priceCents: 2500, quantity: 4 }];
     expect(calculateCartTotal(items)).toBe(10000);
+  });
+  // ── Tính năng mã giảm giá ───────────────────────────────────────────────
+
+  test("TC_CART_TOT_004 – áp dụng mã giảm giá thành công (ví dụ: giảm 10%)", () => {
+    const items = [
+      { priceCents: 10000, quantity: 1 }, // Tổng 10000
+    ];
+    // Giả sử hàm calculateCartTotal nhận tham số thứ 2 là discountCode
+    // 'SALE10' mô phỏng mã giảm giá 10% -> tổng còn 9000
+    const discountCode = "SALE10"; 
+    expect(calculateCartTotal(items, discountCode)).toBe(9000);
+  });
+
+  test("TC_CART_TOT_005 – không giảm giá nếu mã giảm giá không hợp lệ", () => {
+    const items = [
+      { priceCents: 10000, quantity: 1 },
+    ];
+    // Nếu mã sai, giữ nguyên giá gốc
+    expect(calculateCartTotal(items, "INVALID_CODE")).toBe(10000);
+  });
+
+  // ── Tính năng xóa sản phẩm ──────────────────────────────────────────────
+
+  test("TC_CART_TOT_006 – tính toán lại tổng chính xác sau khi xóa một sản phẩm", () => {
+    // 1. Khởi tạo giỏ hàng ban đầu
+    let items = [
+      { id: "P001", priceCents: 5000, quantity: 2 },  // 10000
+      { id: "P002", priceCents: 15000, quantity: 1 }, // 15000
+    ];
+    // Tổng ban đầu phải là 25000
+    expect(calculateCartTotal(items)).toBe(25000);
+
+    // 2. Mô phỏng hành động user xóa sản phẩm P001 khỏi giỏ hàng
+    items = items.filter(item => item.id !== "P001");
+
+    // 3. Tính lại tổng tiền sau khi xóa
+    expect(calculateCartTotal(items)).toBe(15000);
   });
 });
