@@ -112,7 +112,10 @@ export default function CartPage() {
                       >
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="w-7 text-center text-sm font-medium">
+                      <span
+                        data-testid={`cart-qty-${item.id}`}
+                        className="w-7 text-center text-sm font-medium"
+                      >
                         {item.quantity}
                       </span>
                       <button
@@ -127,7 +130,10 @@ export default function CartPage() {
                       </button>
                     </div>
 
-                    <span className="font-bold text-sm text-(--color-accent-light) w-20 text-right">
+                    <span
+                      data-testid={`cart-item-subtotal-${item.id}`}
+                      className="font-bold text-sm text-(--color-accent-light) w-20 text-right"
+                    >
                       {formatCurrency(item.subtotalCents)}
                     </span>
 
@@ -181,7 +187,10 @@ export default function CartPage() {
                       Subtotal ({cartItems.reduce((s, i) => s + i.quantity, 0)}{" "}
                       items)
                     </span>
-                    <span className="text-(--color-text)">
+                    <span
+                      data-testid="cart-summary-subtotal"
+                      className="text-(--color-text)"
+                    >
                       {formatCurrency(subtotalCents)}
                     </span>
                   </div>
@@ -197,7 +206,10 @@ export default function CartPage() {
                   )}
                   <div className="border-t border-(--color-border) pt-3 flex justify-between">
                     <span className="font-bold">Estimated Total</span>
-                    <span className="font-bold text-lg gradient-text">
+                    <span
+                      data-testid="cart-summary-total"
+                      className="font-bold text-lg gradient-text"
+                    >
                       {formatCurrency(subtotalCents)}
                     </span>
                   </div>

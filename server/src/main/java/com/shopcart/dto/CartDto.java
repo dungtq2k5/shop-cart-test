@@ -31,6 +31,21 @@ public class CartDto {
     }
 
     @Data
+    public static class UpdateCartItemRequest {
+        @NotNull(message = "Cart item ID is required")
+        private UUID cartItemId;
+
+        @Min(value = 1, message = "Quantity must be at least 1")
+        private int quantity;
+    }
+
+    @Data
+    public static class RemoveCartRequest {
+        @NotNull(message = "Cart item ID is required")
+        private UUID cartItemId;
+    }
+
+    @Data
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder

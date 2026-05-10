@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.lang.NonNull;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,7 +83,15 @@ public class CartService {
                 .orElseThrow(() -> new EntityNotFoundException("Cart item not found"));
 
         if (!cartItem.getUser().getId().equals(user.getId())) {
-            throw new BadRequestException("Cart item does not belong to current user");
+            throw new AccessDeniedException("Cart item does not belong to current user");
+        }
+
+        if (request.getQuantity() < 1) {
+            throw new BadRequestException("Quantity must be at least 1");
+        }
+
+        if (cartItem.getProduct().getIsActive().equals(false)) {
+            throw new BadRequestException("Product is not available");
         }
 
         if (request.getQuantity() > cartItem.getProduct().getStockQty()) {
@@ -100,7 +109,7 @@ public class CartService {
                 .orElseThrow(() -> new EntityNotFoundException("Cart item not found"));
 
         if (!cartItem.getUser().getId().equals(user.getId())) {
-            throw new BadRequestException("Cart item does not belong to current user");
+            throw new AccessDeniedException("Cart item does not belong to current user");
         }
 
         cartItemRepository.delete(cartItem);

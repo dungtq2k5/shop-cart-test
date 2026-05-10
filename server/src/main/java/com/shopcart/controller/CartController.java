@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,11 +54,29 @@ public class CartController {
         return ResponseEntity.ok(ApiResponse.ok("Cart updated", item));
     }
 
+    @PutMapping("/update")
+    public ResponseEntity<ApiResponse<CartDto.CartItemResponse>> updateQuantityByBody(
+            @AuthenticationPrincipal User currentUser,
+            @Valid @RequestBody CartDto.UpdateCartItemRequest request) {
+        CartDto.UpdateCartRequest updateRequest = new CartDto.UpdateCartRequest();
+        updateRequest.setQuantity(request.getQuantity());
+        CartDto.CartItemResponse item = cartService.updateQuantity(currentUser, request.getCartItemId(), updateRequest);
+        return ResponseEntity.ok(ApiResponse.ok("Cart updated", item));
+    }
+
     @DeleteMapping("/{cartItemId}")
     public ResponseEntity<ApiResponse<Void>> removeFromCart(
             @AuthenticationPrincipal User currentUser,
             @PathVariable @NonNull UUID cartItemId) {
         cartService.removeFromCart(currentUser, cartItemId);
+        return ResponseEntity.ok(ApiResponse.ok("Item removed from cart", null));
+    }
+
+    @DeleteMapping("/remove")
+    public ResponseEntity<ApiResponse<Void>> removeFromCartByBody(
+            @AuthenticationPrincipal User currentUser,
+            @Valid @RequestBody CartDto.RemoveCartRequest request) {
+        cartService.removeFromCart(currentUser, request.getCartItemId());
         return ResponseEntity.ok(ApiResponse.ok("Item removed from cart", null));
     }
 }

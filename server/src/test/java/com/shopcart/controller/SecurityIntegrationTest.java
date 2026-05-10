@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -178,7 +179,22 @@ class SecurityIntegrationTest {
 				.cookie(new Cookie("jwt", token1))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(updateRequest)))
-				.andExpect(status().isBadRequest())
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Cart item does not belong to current user"));
+	}
+
+	@Test
+	@DisplayName("IDOR: User A trying to remove User B's cart item")
+	void testIDOR_RemoveOtherUserCart() throws Exception {
+		CartItem user2Item = cartItemRepository.save(CartItem.builder()
+				.user(user2)
+				.product(product)
+				.quantity(1)
+				.build());
+
+		mockMvc.perform(delete(apiPrefix + "/cart/" + user2Item.getId())
+				.cookie(new Cookie("jwt", token1)))
+				.andExpect(status().isForbidden())
 				.andExpect(jsonPath("$.message").value("Cart item does not belong to current user"));
 	}
 
@@ -188,6 +204,25 @@ class SecurityIntegrationTest {
 	@DisplayName("Authentication: Accessing cart without token")
 	void testUnauthenticatedAccess_Cart() throws Exception {
 		mockMvc.perform(get(apiPrefix + "/cart"))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@DisplayName("Authentication: Updating cart without token")
+	void testUnauthenticatedAccess_UpdateCart() throws Exception {
+		CartDto.UpdateCartRequest updateRequest = new CartDto.UpdateCartRequest();
+		updateRequest.setQuantity(2);
+
+		mockMvc.perform(patch(apiPrefix + "/cart/" + UUID.randomUUID())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(updateRequest)))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@DisplayName("Authentication: Removing cart item without token")
+	void testUnauthenticatedAccess_RemoveCart() throws Exception {
+		mockMvc.perform(delete(apiPrefix + "/cart/" + UUID.randomUUID()))
 				.andExpect(status().isUnauthorized());
 	}
 

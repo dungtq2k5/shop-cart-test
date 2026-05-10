@@ -19,6 +19,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import com.shopcart.dto.CartDto;
 import com.shopcart.entity.CartItem;
@@ -359,7 +360,7 @@ class CartServiceTest {
 	 * another user's cart items (authorization check).
 	 */
 	@Test
-	@DisplayName("TC_CART_NEG_008 – updateQuantity: throws BadRequestException when item belongs to another user")
+	@DisplayName("TC_CART_NEG_008 – updateQuantity: throws AccessDeniedException when item belongs to another user")
 	void updateQuantity_differentUser_throwsBadRequestException() {
 		// ── Arrange ────────────────────────────────────────────────────────────
 		final UUID cartItemId = UUID.randomUUID();
@@ -389,7 +390,7 @@ class CartServiceTest {
 		// ── Act & Assert ───────────────────────────────────────────────────────
 		// testUser trying to modify anotherUser's item → should be rejected
 		assertThatThrownBy(() -> cartService.updateQuantity(testUser, cartItemId, request))
-				.isInstanceOf(BadRequestException.class)
+				.isInstanceOf(AccessDeniedException.class)
 				.hasMessageContaining("does not belong");
 	}
 
@@ -438,6 +439,88 @@ class CartServiceTest {
 		verify(cartItemRepository, never()).save(any());
 	}
 
+	/**
+	 * TC_CART_NEG_015: Negative — quantity is zero (invalid).
+	 */
+	@Test
+	@DisplayName("TC_CART_NEG_015 – updateQuantity: throws BadRequestException when quantity is zero")
+	void updateQuantity_zeroQuantity_throwsBadRequestException() {
+		final UUID cartItemId = UUID.randomUUID();
+		final CartItem existingItem = CartItem.builder()
+				.id(cartItemId)
+				.user(testUser)
+				.product(testProduct)
+				.quantity(1)
+				.build();
+
+		final CartDto.UpdateCartRequest request = new CartDto.UpdateCartRequest();
+		request.setQuantity(0);
+
+		when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(existingItem));
+
+		assertThatThrownBy(() -> cartService.updateQuantity(testUser, cartItemId, request))
+				.isInstanceOf(BadRequestException.class)
+				.hasMessageContaining("Quantity must be at least 1");
+		verify(cartItemRepository, never()).save(any());
+	}
+
+	/**
+	 * TC_CART_NEG_016: Negative — quantity is negative (invalid).
+	 */
+	@Test
+	@DisplayName("TC_CART_NEG_016 – updateQuantity: throws BadRequestException when quantity is negative")
+	void updateQuantity_negativeQuantity_throwsBadRequestException() {
+		final UUID cartItemId = UUID.randomUUID();
+		final CartItem existingItem = CartItem.builder()
+				.id(cartItemId)
+				.user(testUser)
+				.product(testProduct)
+				.quantity(1)
+				.build();
+
+		final CartDto.UpdateCartRequest request = new CartDto.UpdateCartRequest();
+		request.setQuantity(-3);
+
+		when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(existingItem));
+
+		assertThatThrownBy(() -> cartService.updateQuantity(testUser, cartItemId, request))
+				.isInstanceOf(BadRequestException.class)
+				.hasMessageContaining("Quantity must be at least 1");
+		verify(cartItemRepository, never()).save(any());
+	}
+
+	/**
+	 * TC_CART_NEG_017: Negative — product is inactive when updating quantity.
+	 */
+	@Test
+	@DisplayName("TC_CART_NEG_017 – updateQuantity: throws BadRequestException when product is inactive")
+	void updateQuantity_inactiveProduct_throwsBadRequestException() {
+		final UUID cartItemId = UUID.randomUUID();
+		final Product inactiveProduct = Product.builder()
+				.id(testProduct.getId())
+				.name(testProduct.getName())
+				.priceCents(testProduct.getPriceCents())
+				.stockQty(testProduct.getStockQty())
+				.isActive(false)
+				.build();
+		final CartItem existingItem = CartItem.builder()
+				.id(cartItemId)
+				.user(testUser)
+				.product(inactiveProduct)
+				.quantity(1)
+				.build();
+
+		final CartDto.UpdateCartRequest request = new CartDto.UpdateCartRequest();
+		request.setQuantity(2);
+
+		when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(existingItem));
+
+		assertThatThrownBy(() -> cartService.updateQuantity(testUser, cartItemId, request))
+				.isInstanceOf(BadRequestException.class)
+				.hasMessageContaining("Product is not available");
+		verify(cartItemRepository, never()).save(any());
+	}
+
 	// ══════════════════════════════════════════════════════════════════════════
 	// Test group: removeFromCart()
 	// ══════════════════════════════════════════════════════════════════════════
@@ -474,7 +557,7 @@ class CartServiceTest {
 	 * TC_CART_NEG_010: Security — user cannot delete another user's cart item.
 	 */
 	@Test
-	@DisplayName("TC_CART_NEG_010 – removeFromCart: throws BadRequestException for item belonging to another user")
+	@DisplayName("TC_CART_NEG_010 – removeFromCart: throws AccessDeniedException for item belonging to another user")
 	void removeFromCart_itemOwnedByOtherUser_throwsBadRequestException() {
 		// ── Arrange ────────────────────────────────────────────────────────────
 		final UUID cartItemId = UUID.randomUUID();
@@ -498,7 +581,7 @@ class CartServiceTest {
 
 		// ── Act & Assert ───────────────────────────────────────────────────────
 		assertThatThrownBy(() -> cartService.removeFromCart(testUser, cartItemId))
-				.isInstanceOf(BadRequestException.class);
+				.isInstanceOf(AccessDeniedException.class);
 
 		// Verify delete was NEVER called — we stopped before deleting
 		verify(cartItemRepository, never()).delete(any());
