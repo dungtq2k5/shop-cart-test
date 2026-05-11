@@ -46,7 +46,7 @@ public class JwtUtils {
         try {
             Claims claims = parseClaims(token);
             return !claims.getExpiration().before(new Date());
-        } catch (JwtException | IllegalArgumentException _) {
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }

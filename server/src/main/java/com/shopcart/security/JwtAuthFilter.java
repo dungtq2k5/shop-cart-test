@@ -53,7 +53,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(auth);
                     });
-                } catch (IllegalArgumentException _) {
+                } catch (IllegalArgumentException e) {
                     // Invalid UUID in token — skip authentication
                 }
             }
