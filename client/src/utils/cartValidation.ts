@@ -116,3 +116,18 @@ export function calculateCartTotal(
     0,
   );
 }
+
+/**
+ * Counts the total number of individual units across all items in the cart.
+ *
+ * @param items - Array of objects with a `quantity` field.
+ * @returns Sum of all quantities.
+ *
+ * @example
+ * calculateCartItemCount([{ quantity: 2 }, { quantity: 3 }]) // → 5
+ */
+export function calculateCartItemCount(
+  items: Array<{ quantity: number }>,
+): number {
+  return items.reduce((sum, item) => sum + item.quantity, 0);
+}

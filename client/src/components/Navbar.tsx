@@ -10,8 +10,16 @@ import {
 import { useAuthStore } from "../stores/useAuthStore";
 import { useCartStore } from "../stores/useCartStore";
 import { formatError } from "../utils";
+import { calculateCartItemCount } from "../utils/cartValidation";
 import toast from "react-hot-toast";
-import React, { useState, useRef, useEffect, memo } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+  memo,
+} from "react";
 
 const Navbar = memo(() => {
   const { isAuth, user, logout } = useAuthStore();
@@ -21,7 +29,10 @@ const Navbar = memo(() => {
   const [query, setQuery] = useState(searchParams.get("name") || "");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
+  const cartCount = useMemo(
+    () => calculateCartItemCount(cartItems),
+    [cartItems],
+  );
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -37,14 +48,17 @@ const Navbar = memo(() => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleSearch: React.SubmitEventHandler<HTMLFormElement> = (e): void => {
-    e.preventDefault();
-    const params = new URLSearchParams();
-    if (query.trim()) params.set("name", query.trim());
-    navigate(`/?${params.toString()}`);
-  };
+  const handleSearch: React.SubmitEventHandler<HTMLFormElement> = useCallback(
+    (e): void => {
+      e.preventDefault();
+      const params = new URLSearchParams();
+      if (query.trim()) params.set("name", query.trim());
+      navigate(`/?${params.toString()}`);
+    },
+    [query, navigate],
+  );
 
-  const handleLogout = async (): Promise<void> => {
+  const handleLogout = useCallback(async (): Promise<void> => {
     try {
       await logout();
       toast.success("Logged out successfully");
@@ -52,7 +66,7 @@ const Navbar = memo(() => {
     } catch (err) {
       toast.error(formatError(err, "Logout failed"));
     }
-  };
+  }, [logout, navigate]);
 
   return (
     <nav className="fixed top-0 inset-x-0 z-50 glass border-b border-(--color-border)">

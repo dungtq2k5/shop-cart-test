@@ -2,6 +2,10 @@ import { create } from "zustand";
 import api from "../lib/api";
 import type { CartItem, AddToCartRequest } from "../types";
 import { ENDPOINTS, CART_DEBOUNCE_MS } from "../config/constants";
+import {
+  calculateCartTotal,
+  calculateLineSubtotal,
+} from "../utils/cartValidation";
 
 type CartState = {
   cartItems: CartItem[];
@@ -15,7 +19,12 @@ type CartState = {
 };
 
 function calcSubtotal(items: CartItem[]): number {
-  return items.reduce((sum, item) => sum + item.subtotalCents, 0);
+  return calculateCartTotal(
+    items.map((item) => ({
+      priceCents: item.product.priceCents,
+      quantity: item.quantity,
+    })),
+  );
 }
 
 // Debounce helper for quantity updates
@@ -63,7 +72,10 @@ export const useCartStore = create<CartState>((set, get) => ({
           ? {
               ...item,
               quantity,
-              subtotalCents: item.product.priceCents * quantity,
+              subtotalCents: calculateLineSubtotal(
+                item.product.priceCents,
+                quantity,
+              ),
             }
           : item,
       );

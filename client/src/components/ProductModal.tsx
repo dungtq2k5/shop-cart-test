@@ -1,9 +1,10 @@
 import { X, ShoppingCart, Star } from "lucide-react";
 import type { Product } from "../types";
 import { formatCurrency, formatError } from "../utils";
+import { calculateLineSubtotal } from "../utils/cartValidation";
 import { useCartStore } from "../stores/useCartStore";
 import { useAuthStore } from "../stores/useAuthStore";
-import { useEffect, useRef, useState, memo } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback, memo } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -20,9 +21,18 @@ const ProductModal = memo(({ product, onClose }: Props) => {
   const [adding, setAdding] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  const existingItem = cartItems.find((i) => i.product.id === product.id);
-  const existingQty = existingItem ? existingItem.quantity : 0;
-  const maxToAdd = Math.max(0, product.stockQty - existingQty);
+  // Memoize stock availability — only recalculates when cartItems or product change
+  const maxToAdd = useMemo(() => {
+    const existing = cartItems.find((i) => i.product.id === product.id);
+    const qty = existing ? existing.quantity : 0;
+    return Math.max(0, product.stockQty - qty);
+  }, [cartItems, product.id, product.stockQty]);
+
+  // Memoize line subtotal display — recalculates only when price or quantity changes
+  const lineSubtotal = useMemo(
+    () => calculateLineSubtotal(product.priceCents, quantity),
+    [product.priceCents, quantity],
+  );
 
   // Trap focus & prevent background scroll
   useEffect(() => {
@@ -42,7 +52,7 @@ const ProductModal = memo(({ product, onClose }: Props) => {
     };
   }, [onClose]);
 
-  const handleAddToCart = async (): Promise<void> => {
+  const handleAddToCart = useCallback(async (): Promise<void> => {
     if (!isAuth) {
       toast.error("Please log in to add items to cart");
       navigate("/login");
@@ -58,7 +68,15 @@ const ProductModal = memo(({ product, onClose }: Props) => {
     } finally {
       setAdding(false);
     }
-  };
+  }, [
+    isAuth,
+    navigate,
+    addToCart,
+    product.id,
+    product.name,
+    quantity,
+    onClose,
+  ]);
 
   return (
     <div
@@ -169,7 +187,7 @@ const ProductModal = memo(({ product, onClose }: Props) => {
             <div className="rounded-lg bg-(--color-surface-2) border border-(--color-border) p-3 flex items-center justify-between">
               <span className="text-sm text-(--color-text-muted)">Total</span>
               <span className="font-bold text-(--color-accent-light)">
-                {formatCurrency(product.priceCents * quantity)}
+                {formatCurrency(lineSubtotal)}
               </span>
             </div>
           )}

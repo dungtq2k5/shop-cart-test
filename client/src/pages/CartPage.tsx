@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Trash2,
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "../stores/useCartStore";
 import { formatCurrency, formatError } from "../utils";
+import { MIN_QUANTITY, calculateCartItemCount } from "../utils/cartValidation";
 import toast from "react-hot-toast";
 
 export default function CartPage() {
@@ -24,30 +25,35 @@ export default function CartPage() {
   const [couponCode, setCouponCode] = useState("");
   const [removing, setRemoving] = useState<string | null>(null);
 
+  const itemCount = useMemo(
+    () => calculateCartItemCount(cartItems),
+    [cartItems],
+  );
+
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
 
-  const handleRemove = async (
-    cartItemId: string,
-    productName: string,
-  ): Promise<void> => {
-    setRemoving(cartItemId);
-    try {
-      await removeFromCart(cartItemId);
-      toast.success(`${productName} removed from cart`);
-    } catch (err) {
-      toast.error(formatError(err, "Failed to remove item"));
-    } finally {
-      setRemoving(null);
-    }
-  };
+  const handleRemove = useCallback(
+    async (cartItemId: string, productName: string): Promise<void> => {
+      setRemoving(cartItemId);
+      try {
+        await removeFromCart(cartItemId);
+        toast.success(`${productName} removed from cart`);
+      } catch (err) {
+        toast.error(formatError(err, "Failed to remove item"));
+      } finally {
+        setRemoving(null);
+      }
+    },
+    [removeFromCart],
+  );
 
-  const handleCheckout = (): void => {
+  const handleCheckout = useCallback((): void => {
     navigate("/checkout", {
       state: { couponCode: couponCode.trim() || undefined },
     });
-  };
+  }, [navigate, couponCode]);
 
   return (
     <>
@@ -104,11 +110,11 @@ export default function CartPage() {
                         onClick={() =>
                           updateQuantity(
                             item.id,
-                            Math.max(1, item.quantity - 1),
+                            Math.max(MIN_QUANTITY, item.quantity - 1),
                           )
                         }
                         className="w-7 h-7 rounded-md hover:bg-(--color-border) flex items-center justify-center text-(--color-text-muted) hover:text-(--color-text) transition-colors"
-                        disabled={item.quantity <= 1}
+                        disabled={item.quantity <= MIN_QUANTITY}
                       >
                         <Minus className="w-3 h-3" />
                       </button>
@@ -177,10 +183,7 @@ export default function CartPage() {
                 <div className="p-5 bg-(--color-surface) border border-(--color-border) rounded-2xl space-y-3">
                   <h3 className="font-bold">Order Summary</h3>
                   <div className="flex justify-between text-sm text-(--color-text-muted)">
-                    <span>
-                      Subtotal ({cartItems.reduce((s, i) => s + i.quantity, 0)}{" "}
-                      items)
-                    </span>
+                    <span>Subtotal ({itemCount} items)</span>
                     <span className="text-(--color-text)">
                       {formatCurrency(subtotalCents)}
                     </span>

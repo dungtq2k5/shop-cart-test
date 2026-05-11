@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   SlidersHorizontal,
@@ -46,7 +46,9 @@ export default function HomePage() {
         params.set("page", String(currentPage));
         params.set("size", "12");
 
-        const { data } = await api.get(`${ENDPOINTS.PRODUCTS}?${params.toString()}`);
+        const { data } = await api.get(
+          `${ENDPOINTS.PRODUCTS}?${params.toString()}`,
+        );
         if (!cancelled) setProducts(data.data as Page<Product>);
       } finally {
         if (!cancelled) setLoading(false);
@@ -59,7 +61,7 @@ export default function HomePage() {
     };
   }, [searchParams, currentPage]);
 
-  const applyFilters = (): void => {
+  const applyFilters = useCallback((): void => {
     const params = new URLSearchParams();
     if (nameFilter.trim()) params.set("name", nameFilter.trim());
     if (minPrice)
@@ -75,20 +77,23 @@ export default function HomePage() {
     params.set("page", "0");
     setSearchParams(params);
     setFilterOpen(false);
-  };
+  }, [nameFilter, minPrice, maxPrice, setSearchParams]);
 
-  const clearFilters = (): void => {
+  const clearFilters = useCallback((): void => {
     setNameFilter("");
     setMinPrice("");
     setMaxPrice("");
     setSearchParams({});
-  };
+  }, [setSearchParams]);
 
-  const goToPage = (page: number): void => {
-    const params = new URLSearchParams(searchParams);
-    params.set("page", String(page));
-    setSearchParams(params);
-  };
+  const goToPage = useCallback(
+    (page: number): void => {
+      const params = new URLSearchParams(searchParams);
+      params.set("page", String(page));
+      setSearchParams(params);
+    },
+    [searchParams, setSearchParams],
+  );
 
   const hasActiveFilters =
     searchParams.get("name") ||

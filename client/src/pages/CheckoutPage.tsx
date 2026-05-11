@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MapPin, Package, Tag, ArrowRight } from "lucide-react";
 import { useCartStore } from "../stores/useCartStore";
 import { formatCurrency, formatError } from "../utils";
+import { calculateOrderPrice } from "../utils/priceCalculation";
 import api from "../lib/api";
 import toast from "react-hot-toast";
 import { ENDPOINTS, HARD_CODED_SHIPPING_FEE_CENTS } from "../config/constants";
@@ -18,36 +19,52 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
 
+  // Memoize the order price breakdown — only recalculates when cartItems change,
+  // NOT when the user types in the address or coupon fields.
+  const orderPriceBreakdown = useMemo(
+    () =>
+      calculateOrderPrice(
+        cartItems.map((i) => ({
+          priceCents: i.product.priceCents,
+          quantity: i.quantity,
+        })),
+        null,
+        HARD_CODED_SHIPPING_FEE_CENTS,
+      ),
+    [cartItems],
+  );
+
   useEffect(() => {
     if (cartItems.length === 0 && !orderPlaced) {
       navigate("/cart");
     }
   }, [cartItems, navigate, orderPlaced]);
 
-  const handleSubmit = async (
-    e: React.SubmitEvent<HTMLFormElement>,
-  ): Promise<void> => {
-    e.preventDefault();
-    if (!deliveryAddress.trim()) {
-      toast.error("Delivery address is required");
-      return;
-    }
-    setLoading(true);
-    try {
-      await api.post(ENDPOINTS.ORDERS_CHECKOUT, {
-        deliveryAddress: deliveryAddress.trim(),
-        couponCode: couponCode.trim() || undefined,
-      });
-      setOrderPlaced(true);
-      clearCart();
-      toast.success("Order placed successfully! 🎉");
-      navigate("/profile", { state: { tab: "orders" } });
-    } catch (err: unknown) {
-      toast.error(formatError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleSubmit = useCallback(
+    async (e: React.SubmitEvent<HTMLFormElement>): Promise<void> => {
+      e.preventDefault();
+      if (!deliveryAddress.trim()) {
+        toast.error("Delivery address is required");
+        return;
+      }
+      setLoading(true);
+      try {
+        await api.post(ENDPOINTS.ORDERS_CHECKOUT, {
+          deliveryAddress: deliveryAddress.trim(),
+          couponCode: couponCode.trim() || undefined,
+        });
+        setOrderPlaced(true);
+        clearCart();
+        toast.success("Order placed successfully! 🎉");
+        navigate("/profile", { state: { tab: "orders" } });
+      } catch (err: unknown) {
+        toast.error(formatError(err));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [deliveryAddress, couponCode, clearCart, navigate],
+  );
 
   return (
     <div className="min-h-screen pt-24 pb-12">
@@ -159,9 +176,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between font-bold text-base">
                   <span>Total</span>
                   <span id="checkout-total-price" className="gradient-text">
-                    {formatCurrency(
-                      subtotalCents + HARD_CODED_SHIPPING_FEE_CENTS,
-                    )}
+                    {formatCurrency(orderPriceBreakdown.totalCents)}
                   </span>
                 </div>
                 <p className="text-xs text-(--color-text-muted)">
