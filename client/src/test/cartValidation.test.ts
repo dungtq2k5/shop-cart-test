@@ -17,6 +17,7 @@ import {
   validateCartItem,
   calculateLineSubtotal,
   calculateCartTotal,
+  calculateCartItemCount,
 } from "../utils/cartValidation";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -190,5 +191,24 @@ describe("calculateCartTotal()", () => {
     // Boundary: single-item cart
     const items = [{ priceCents: 2500, quantity: 4 }];
     expect(calculateCartTotal(items)).toBe(10000);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Group: calculateCartItemCount()
+// ─────────────────────────────────────────────────────────────────────────────
+describe("calculateCartItemCount()", () => {
+  test("TC_CART_COUNT_001 – returns 0 for an empty cart", () => {
+    expect(calculateCartItemCount([])).toBe(0);
+  });
+
+  test("TC_CART_COUNT_002 – correctly sums quantities across multiple items", () => {
+    const items = [{ quantity: 2 }, { quantity: 3 }, { quantity: 1 }];
+    expect(calculateCartItemCount(items)).toBe(6);
+  });
+
+  test("TC_CART_COUNT_003 – returns quantity for a single item", () => {
+    const items = [{ quantity: 5 }];
+    expect(calculateCartItemCount(items)).toBe(5);
   });
 });
