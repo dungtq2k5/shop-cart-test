@@ -14,8 +14,9 @@ import com.shopcart.exception.BadRequestException;
 import com.shopcart.repository.UserRepository;
 import com.shopcart.security.JwtUtils;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 
 @Service
 public class AuthService {
@@ -70,12 +71,14 @@ public class AuthService {
     }
 
     public void logout(HttpServletResponse response) {
-        Cookie cookie = new Cookie("jwt", "");
-        cookie.setHttpOnly(true);
-        cookie.setSecure(secureCookies);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(secureCookies)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     @Transactional(readOnly = true)
@@ -84,12 +87,14 @@ public class AuthService {
     }
 
     private void setJwtCookie(HttpServletResponse response, String token) {
-        Cookie cookie = new Cookie("jwt", token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(secureCookies);
-        cookie.setPath("/");
-        cookie.setMaxAge((int) (jwtExpirationMs / 1000));
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from("jwt", token)
+                .httpOnly(true)
+                .secure(secureCookies)
+                .path("/")
+                .maxAge(jwtExpirationMs / 1000)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     public static AuthDto.UserResponse toUserResponse(User user) {

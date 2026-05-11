@@ -20,6 +20,11 @@ import com.shopcart.dto.AuthDto;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+// Override properties for testing to test the 429 rate limiting
+@org.springframework.test.context.TestPropertySource(properties = {
+        "app.rate-limit.auth.capacity=5",
+        "app.rate-limit.product.capacity=20"
+})
 @DisplayName("Rate Limiting Integration Tests")
 class RateLimitingIntegrationTest {
 

@@ -161,4 +161,14 @@ public class OrderService {
                 .updatedAt(order.getUpdatedAt() != null ? order.getUpdatedAt().toString() : Instant.now().toString())
                 .build();
     }
+    @Transactional(readOnly = true)
+    public OrderDto.OrderResponse getOrderById(User user, UUID orderId) {
+        // Tìm đơn hàng trong DB, nếu không có hoặc không phải của user này thì ném lỗi 404
+        Order order = orderRepository.findByIdAndUserId(orderId, user.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        
+        // Chuyển đổi từ Entity sang DTO để trả về. 
+        // (Hàm toOrderResponse này đã có sẵn trong OrderService của bạn dùng cho hàm getMyOrders)
+        return toOrderResponse(order); 
+    }
 }

@@ -155,6 +155,9 @@ class OrderServiceTest {
 	 * 4. Cart is cleared.
 	 * 5. Response reflects correct totals.
 	 */
+
+
+	//TestcreateOrder()–tạođơnhàng, trừtồnkho
 	@Test
 	@DisplayName("TC_PURCHASE_001 – checkout: places order successfully and deducts stock")
 	void checkout_validCart_createsOrderAndDeductsStock() {
@@ -201,6 +204,34 @@ class OrderServiceTest {
 		verify(cartItemRepository, times(1)).deleteByUserId(testUser.getId());
 	}
 
+	//•TestgetOrderById()–lấythôngtinđơnhàng
+
+	@Test
+	@DisplayName("TC_PUR_GET_003 – getOrderById: returns specific order details successfully")
+	void getOrderById_returnsOrderDetails() {
+		// 1. Arrange (Chuẩn bị dữ liệu): Tạo 1 đơn hàng ảo
+		final UUID orderId = UUID.randomUUID();
+		final Order mockOrder = Order.builder()
+				.id(orderId)
+				.user(testUser)
+				.status(OrderStatus.PENDING)
+				.totalAmountCents(15000)
+				.deliveryAddress("999 Verified Street")
+				.build();
+
+		// Giả lập (Mock) khi tìm ID này thì trả về đơn hàng ảo
+		when(orderRepository.findByIdAndUserId(orderId, testUser.getId()))
+				.thenReturn(Optional.of(mockOrder));
+
+		// 2. Act (Thực thi): Gọi hàm lấy đơn hàng
+		// Lưu ý: Nếu trong OrderService của bạn tên hàm là getOrderDetail thì sửa lại nhé
+		final OrderDto.OrderResponse result = orderService.getOrderById(testUser, orderId);
+
+		// 3. Assert (Xác nhận): Kiểm tra xem kết quả trả về có đúng địa chỉ và trạng thái không
+		assertThat(result).isNotNull();
+		assertThat(result.getStatus()).isEqualTo("PENDING");
+		assertThat(result.getDeliveryAddress()).isEqualTo("999 Verified Street");
+	}
 	/**
 	 * TC_PURCHASE_002: Happy path — apply a percentage-based coupon (SAVE10 = 10%
 	 * off).
@@ -209,6 +240,9 @@ class OrderServiceTest {
 	 * Coupon 10% → discount = 1000 cents
 	 * Final total = 9000 cents ($90.00)
 	 */
+
+	//•TestcalculateOrderTotal()–tínhtổnggiáchínhxác
+
 	@Test
 	@DisplayName("TC_PURCHASE_002 – checkout: applies percentage coupon and calculates correct discount")
 	void checkout_withPercentageCoupon_calculatesDiscountCorrectly() {
@@ -279,6 +313,8 @@ class OrderServiceTest {
 	 * before checkout completes (another user bought one).
 	 * The transaction must roll back — no partial order should be created.
 	 */
+
+	//•TestcheckStockBeforeOrder()–kiểmtratồnkho
 	@Test
 	@DisplayName("TC_PUR_003 – checkout: throws InsufficientStockException when stock is insufficient")
 	void checkout_insufficientStock_throwsInsufficientStockException() {
@@ -401,6 +437,8 @@ class OrderServiceTest {
 	 * - Status changes from PENDING → CANCELLED
 	 * - Stock is refunded for each order item
 	 */
+
+	//•TestcancelOrder()–hủyđơn,hoàntồnkho
 	@Test
 	@DisplayName("TC_PUR_006 – cancelOrder: cancels PENDING order and refunds product stock")
 	void cancelOrder_pendingOrder_cancelsAndRefundsStock() {

@@ -49,7 +49,7 @@ class OrderServiceMockTest {
     void testCheckoutWithMockedRepositories() {
         // Arrange
         User mockUser = User.builder().id(UUID.randomUUID()).build();
-
+        
         Product mockProduct = new Product();
         mockProduct.setId(UUID.randomUUID());
         mockProduct.setName("Laptop Dell");

@@ -16,6 +16,10 @@ export class CheckoutPage {
     this.couponInput = page.locator("#checkout-coupon");
     this.submitBtn = page.locator("#checkout-submit");
 
+
+
+
+    
     this.totalDisplay = page.locator('#checkout-total-price');
     // Shipping fee displays as $5.00
     this.shippingFeeDisplay = page.locator("text=$5.00");
