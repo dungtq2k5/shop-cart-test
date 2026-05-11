@@ -85,4 +85,21 @@ class CartControllerIntegrationTest {
 				.andExpect(jsonPath("$.message").value("Item added to cart"))
 				.andExpect(jsonPath("$.data.quantity").value(2));
 	}
+
+	@Test
+	@DisplayName("Test POST /cart - validation failure")
+	void testAddToCart_ValidationFailure() throws Exception {
+		// Arrange
+		CartDto.AddToCartRequest request = new CartDto.AddToCartRequest();
+		request.setProductId(null); // Invalid: productId is required
+		request.setQuantity(0); // Invalid: quantity must be at least 1
+
+		// Act & Assert
+		mockMvc.perform(post(apiPrefix + "/cart")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+				.andDo(print())
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.success").value(false));
+	}
 }
