@@ -80,10 +80,9 @@ test.describe("Cart E2E Tests", () => {
       }
     });
 
-    // Set token to bypass local checks
-    await page.goto("http://localhost:5173");
-    await page.evaluate(() => localStorage.setItem("token", "mock-token"));
-    await page.reload();
+    // Set token to bypass local checks before first load
+    await page.addInitScript(() => localStorage.setItem("token", "mock-token"));
+    await page.goto("/");
 
     // Wait for auth check to finish
     await page.waitForSelector("#navbar-cart-link");

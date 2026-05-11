@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -389,17 +390,18 @@ class CartServiceTest {
 
 		// ── Act & Assert ───────────────────────────────────────────────────────
 		// testUser trying to modify anotherUser's item → should be rejected
-		assertThatThrownBy(() -> cartService.updateQuantity(testUser, cartItemId, request))
-				.isInstanceOf(AccessDeniedException.class)
-				.hasMessageContaining("does not belong");
+		AccessDeniedException ex = assertThrows(AccessDeniedException.class,
+				() -> cartService.updateQuantity(testUser, cartItemId, request));
+		assertThat(ex.getMessage()).contains("does not belong");
+		verify(cartItemRepository, times(1)).findById(cartItemId);
 	}
 
 	/**
 	 * TC_CART_NEG_009: Negative — cart item ID not found during quantity update.
 	 */
 	@Test
-	@DisplayName("TC_CART_NEG_009 – updateQuantity: throws EntityNotFoundException for non-existent cart item")
-	void updateQuantity_cartItemNotFound_throwsEntityNotFoundException() {
+	@DisplayName("TC_CART_NEG_009 – updateQuantity: throws EntityNotFoundException when item not in cart")
+	void updateQuantity_itemNotInCart_throwsEntityNotFoundException() {
 		// ── Arrange ────────────────────────────────────────────────────────────
 		final UUID nonExistentId = UUID.randomUUID();
 		final CartDto.UpdateCartRequest request = new CartDto.UpdateCartRequest();
@@ -408,9 +410,30 @@ class CartServiceTest {
 		when(cartItemRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
 		// ── Act & Assert ───────────────────────────────────────────────────────
-		assertThatThrownBy(() -> cartService.updateQuantity(testUser, nonExistentId, request))
-				.isInstanceOf(EntityNotFoundException.class)
-				.hasMessageContaining("Cart item not found");
+		EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
+				() -> cartService.updateQuantity(testUser, nonExistentId, request));
+		assertThat(ex.getMessage()).contains("Cart item not found");
+		verify(cartItemRepository, times(1)).findById(nonExistentId);
+	}
+
+	/**
+	 * TC_CART_NEG_009B: Negative — product not found (cart item missing).
+	 */
+	@Test
+	@DisplayName("TC_CART_NEG_009B – updateQuantity: throws EntityNotFoundException when product not found in cart")
+	void updateQuantity_productNotFound_throwsEntityNotFoundException() {
+		// ── Arrange ────────────────────────────────────────────────────────────
+		final UUID nonExistentId = UUID.randomUUID();
+		final CartDto.UpdateCartRequest request = new CartDto.UpdateCartRequest();
+		request.setQuantity(2);
+
+		when(cartItemRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+
+		// ── Act & Assert ───────────────────────────────────────────────────────
+		EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
+				() -> cartService.updateQuantity(testUser, nonExistentId, request));
+		assertThat(ex.getMessage()).contains("Cart item not found");
+		verify(cartItemRepository, times(1)).findById(nonExistentId);
 	}
 
 	/**
@@ -432,11 +455,12 @@ class CartServiceTest {
 
 		when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(existingItem));
 
-		assertThatThrownBy(() -> cartService.updateQuantity(testUser, cartItemId, request))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining("Stock not available");
+		BadRequestException ex = assertThrows(BadRequestException.class,
+				() -> cartService.updateQuantity(testUser, cartItemId, request));
+		assertThat(ex.getMessage()).contains("Stock not available");
 
 		verify(cartItemRepository, never()).save(any());
+		verify(cartItemRepository, times(1)).findById(cartItemId);
 	}
 
 	/**
@@ -458,10 +482,11 @@ class CartServiceTest {
 
 		when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(existingItem));
 
-		assertThatThrownBy(() -> cartService.updateQuantity(testUser, cartItemId, request))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining("Quantity must be at least 1");
+		BadRequestException ex = assertThrows(BadRequestException.class,
+				() -> cartService.updateQuantity(testUser, cartItemId, request));
+		assertThat(ex.getMessage()).contains("Quantity must be at least 1");
 		verify(cartItemRepository, never()).save(any());
+		verify(cartItemRepository, times(1)).findById(cartItemId);
 	}
 
 	/**
@@ -483,10 +508,11 @@ class CartServiceTest {
 
 		when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(existingItem));
 
-		assertThatThrownBy(() -> cartService.updateQuantity(testUser, cartItemId, request))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining("Quantity must be at least 1");
+		BadRequestException ex = assertThrows(BadRequestException.class,
+				() -> cartService.updateQuantity(testUser, cartItemId, request));
+		assertThat(ex.getMessage()).contains("Quantity must be at least 1");
 		verify(cartItemRepository, never()).save(any());
+		verify(cartItemRepository, times(1)).findById(cartItemId);
 	}
 
 	/**
@@ -515,10 +541,11 @@ class CartServiceTest {
 
 		when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(existingItem));
 
-		assertThatThrownBy(() -> cartService.updateQuantity(testUser, cartItemId, request))
-				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining("Product is not available");
+		BadRequestException ex = assertThrows(BadRequestException.class,
+				() -> cartService.updateQuantity(testUser, cartItemId, request));
+		assertThat(ex.getMessage()).contains("Product is not available");
 		verify(cartItemRepository, never()).save(any());
+		verify(cartItemRepository, times(1)).findById(cartItemId);
 	}
 
 	// ══════════════════════════════════════════════════════════════════════════
@@ -551,6 +578,7 @@ class CartServiceTest {
 		// ── Assert ─────────────────────────────────────────────────────────────
 		// Verify that delete was called with the correct item
 		verify(cartItemRepository, times(1)).delete(existingItem);
+		verify(cartItemRepository, times(1)).findById(cartItemId);
 	}
 
 	/**
@@ -580,11 +608,12 @@ class CartServiceTest {
 		when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(itemOwnedByOtherUser));
 
 		// ── Act & Assert ───────────────────────────────────────────────────────
-		assertThatThrownBy(() -> cartService.removeFromCart(testUser, cartItemId))
-				.isInstanceOf(AccessDeniedException.class);
+		assertThrows(AccessDeniedException.class,
+				() -> cartService.removeFromCart(testUser, cartItemId));
 
 		// Verify delete was NEVER called — we stopped before deleting
 		verify(cartItemRepository, never()).delete(any());
+		verify(cartItemRepository, times(1)).findById(cartItemId);
 	}
 
 	/**
@@ -598,11 +627,30 @@ class CartServiceTest {
 		when(cartItemRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
 		// ── Act & Assert ───────────────────────────────────────────────────────
-		assertThatThrownBy(() -> cartService.removeFromCart(testUser, nonExistentId))
-				.isInstanceOf(EntityNotFoundException.class)
-				.hasMessageContaining("Cart item not found");
+		EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
+				() -> cartService.removeFromCart(testUser, nonExistentId));
+		assertThat(ex.getMessage()).contains("Cart item not found");
 
 		verify(cartItemRepository, never()).delete(any());
+		verify(cartItemRepository, times(1)).findById(nonExistentId);
+	}
+
+	/**
+	 * TC_CART_NEG_011B: Negative — removing from an empty cart (no items).
+	 */
+	@Test
+	@DisplayName("TC_CART_NEG_011B – removeFromCart: throws EntityNotFoundException when cart is empty")
+	void removeFromCart_emptyCart_throwsEntityNotFoundException() {
+		// ── Arrange ────────────────────────────────────────────────────────────
+		final UUID cartItemId = UUID.randomUUID();
+		when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.empty());
+
+		// ── Act & Assert ───────────────────────────────────────────────────────
+		EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
+				() -> cartService.removeFromCart(testUser, cartItemId));
+		assertThat(ex.getMessage()).contains("Cart item not found");
+		verify(cartItemRepository, never()).delete(any());
+		verify(cartItemRepository, times(1)).findById(cartItemId);
 	}
 
 	// ══════════════════════════════════════════════════════════════════════════

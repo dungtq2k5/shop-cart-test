@@ -1,5 +1,7 @@
 package com.shopcart.controller;
 
+import java.util.UUID;
+
 import static org.hamcrest.Matchers.containsString;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
