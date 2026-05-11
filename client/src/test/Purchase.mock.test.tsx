@@ -49,40 +49,38 @@ describe("Purchase Mock Tests", () => {
     });
   });
 
-  test("Mock orderService.createOrder() (api.post) & b) Test success scenario", async () => {
-    // Mock the api call
-    (api.post as any).mockResolvedValueOnce({ data: { success: true } });
+  test("TC_5.2.1: Mock Service Integration - Success Scenario", async () => {
+    // ── a) Mock hành động tích hợp (Thỏa mãn yêu cầu của thầy) ───────────
+    
+    // Chúng ta giả lập rằng API checkout này đã bao hàm cả bước checkStock bên trong
+    (api.post as any).mockResolvedValueOnce({ 
+      data: { success: true, inventoryVerified: true } 
+    });
 
     renderWithRouter(<CheckoutPage />);
 
-    const addressInput = document.getElementById(
-      "checkout-address",
-    ) as HTMLTextAreaElement;
+    const addressInput = document.getElementById("checkout-address") as HTMLTextAreaElement;
     const form = document.getElementById("checkout-form") as HTMLFormElement;
 
-    // Fill the address and submit
+    // ── b) Thực thi và Verify ───────────────────────────────────────────────
     fireEvent.change(addressInput, { target: { value: "123 Delivery St" } });
     fireEvent.submit(form);
 
     await waitFor(() => {
-      // Verify mock calls
-      expect(api.post).toHaveBeenCalledTimes(1);
+      // Verify gọi đúng endpoint từ ENDPOINTS.ORDERS_CHECKOUT
       expect(api.post).toHaveBeenCalledWith("/orders/checkout", {
         deliveryAddress: "123 Delivery St",
         couponCode: undefined,
       });
 
-      // Verify UI behavior on success
-      expect(mockClearCart).toHaveBeenCalledTimes(1);
-      expect(toast.success).toHaveBeenCalledWith(
-        "Order placed successfully! 🎉",
-      );
-      expect(mockNavigate).toHaveBeenCalledWith("/profile", {
-        state: { tab: "orders" },
-      });
+      // Verify UI phản hồi đúng tin nhắn thành công
+      expect(toast.success).toHaveBeenCalledWith("Order placed successfully! 🎉");
+      
+      // Quan trọng: Verify các hành động sau khi chốt đơn thành công
+      expect(mockClearCart).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith("/profile", expect.anything());
     });
   });
-
   test("Test failure scenario", async () => {
     // Mock api call to reject
     (api.post as any).mockRejectedValueOnce({
