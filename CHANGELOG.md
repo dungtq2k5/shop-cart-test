@@ -16,3 +16,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **End-to-End (E2E) Testing:** Automated browser testing using Playwright to verify the complete user journey from adding items to checkout.
 - **CI/CD Pipeline:** GitHub Actions workflow (`ci.yml`) to automatically build, lint, and run all backend, frontend, and E2E tests upon repository push/pull requests.
 - **Docker Support:** `docker-compose.yml` for quick, containerized local deployment.
+- **Latex Report Documentation:** Added Latex report documentation for the project.
